@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="gTV-IL-0wX" customClass="FFTableCollectionViewCell">
+            <rect key="frame" x="0.0" y="0.0" width="88" height="93"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                <rect key="frame" x="0.0" y="0.0" width="88" height="93"/>
+                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                <subviews>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="烧录卡大框架里睡" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qx7-UL-aC7">
+                        <rect key="frame" x="5" y="5" width="78" height="83"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                        <nil key="textColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                </subviews>
+            </view>
+            <constraints>
+                <constraint firstItem="qx7-UL-aC7" firstAttribute="centerX" secondItem="gTV-IL-0wX" secondAttribute="centerX" id="1Sc-zG-q6V"/>
+                <constraint firstAttribute="trailing" secondItem="qx7-UL-aC7" secondAttribute="trailing" constant="5" id="A91-B6-dtd"/>
+                <constraint firstAttribute="bottom" secondItem="qx7-UL-aC7" secondAttribute="bottom" constant="5" id="CCi-iA-Jbo"/>
+                <constraint firstItem="qx7-UL-aC7" firstAttribute="centerY" secondItem="gTV-IL-0wX" secondAttribute="centerY" id="jV0-rA-mhW"/>
+                <constraint firstItem="qx7-UL-aC7" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" constant="5" id="s1h-2Y-vGY"/>
+                <constraint firstItem="qx7-UL-aC7" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" constant="5" id="zUt-8n-ovp"/>
+            </constraints>
+            <viewLayoutGuide key="safeArea" id="SEy-5g-ep8"/>
+            <size key="customSize" width="88" height="93"/>
+            <connections>
+                <outlet property="contentLabel" destination="qx7-UL-aC7" id="xNS-Ih-Yjq"/>
+                <outletCollection property="LabelOffsets" destination="A91-B6-dtd" id="anV-ep-Skf"/>
+                <outletCollection property="LabelOffsets" destination="zUt-8n-ovp" id="bqb-Hs-V0H"/>
+                <outletCollection property="LabelOffsets" destination="CCi-iA-Jbo" id="kEs-nj-QX3"/>
+                <outletCollection property="LabelOffsets" destination="s1h-2Y-vGY" id="zBa-g7-CNo"/>
+            </connections>
+            <point key="canvasLocation" x="42" y="97"/>
+        </collectionViewCell>
+    </objects>
+</document>
