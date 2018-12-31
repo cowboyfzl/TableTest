@@ -22,6 +22,7 @@ static NSInteger const FFBorderWidth = 1;
 
 - (void)awakeFromNib {
     [super awakeFromNib];
+    _haveHeader = false;
     [self.contentView.layer addSublayer:self.borderLayer];
     // Initialization code
 }
@@ -33,22 +34,6 @@ static NSInteger const FFBorderWidth = 1;
     self.contentView.backgroundColor = model.bgColor?: [UIColor whiteColor];
     _borderLayer.strokeColor = borderColor.CGColor ?: [UIColor lightGrayColor].CGColor;
     [self setFrameWithSize:size];
-//    [_LabelOffsets enumerateObjectsUsingBlock:^(NSLayoutConstraint *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-//        switch (idx) {
-//            case 0:
-//                obj.constant = edge.right;
-//                break;
-//            case 1:
-//                obj.constant = edge.left;
-//                break;
-//            case 2:
-//                obj.constant = edge.bottom;
-//                break;
-//            case 3:
-//                obj.constant = edge.top;
-//                break;
-//        }
-//    }];
 }
 
 - (void)layoutSubviews {
@@ -58,6 +43,33 @@ static NSInteger const FFBorderWidth = 1;
 
 - (void)setFrameWithSize:(CGSize )size {
     UIBezierPath *path = [UIBezierPath bezierPath];
+    
+    if (self.ishaveHeader) {
+        if (_currentMatrix.row == 0 && _currentMatrix.column == 0) {
+            [path moveToPoint:CGPointMake(0, size.height)];
+            [path addLineToPoint:CGPointMake(0, 0)];
+            
+            [path moveToPoint:CGPointMake(size.width, 0)];
+            [path addLineToPoint:CGPointMake(size.width, size.height)];
+        }
+        
+        if (_currentMatrix.row == 0 && _currentMatrix.column > 0) {
+            [path moveToPoint:CGPointMake(size.width, 0)];
+            [path addLineToPoint:CGPointMake(size.width, size.height)];
+        }
+        
+        if (_currentMatrix.row > 0) {
+            [self drawPath:path size:size];
+        }
+        
+    } else {
+        [self drawPath:path size:size];
+    }
+    
+    _borderLayer.path = path.CGPath;
+}
+
+- (void )drawPath:(UIBezierPath *)path size:(CGSize )size {
     if (_currentMatrix.column == 0) {
         [path moveToPoint:CGPointMake(0, size.height)];
         [path addLineToPoint:CGPointMake(0, 0)];
@@ -74,8 +86,6 @@ static NSInteger const FFBorderWidth = 1;
     if (_currentMatrix.row == _maxMatrix.row ) {
         [path addLineToPoint:CGPointMake(0,size.height)];
     }
-    
-    _borderLayer.path = path.CGPath;
 }
 
 + (UIFont *)getPhoneFont {

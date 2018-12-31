@@ -9,7 +9,8 @@
 #import "FFTableManager.h"
 #import "FFTableCollectionViewCell.h"
 #import "FFTableCollectionViewFlowLayout.h"
-
+#import "UICollectionViewFlowLayout+Add.h"
+#import "FFCollectionHeaderView.h"
 @interface FFTableManager () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>
 @property (nonatomic, strong) UICollectionView *mainCollectionView;
 @property (nonatomic, strong) UIScrollView *mainScrollView;
@@ -20,16 +21,17 @@
 @property (nonatomic, assign) NSInteger column;
 @property (nonatomic, strong) NSMutableArray *cellWidthsArr;
 @property (nonatomic, copy) FFSelectBlock selectBlock;
+@property (nonatomic, copy) FFSelectBlock selectHeaderBlock;
 @property (nonatomic, strong) NSMutableDictionary *cacheRowHeight;
 @property (nonatomic, strong) UIColor *cellBorderColor;
-@property (nonatomic, assign) FFMatrix maxMatrix;
+@property (nonatomic, strong) NSMutableArray *maxMatrixs;
 @property (nonatomic, assign) BOOL cellAverageItem;
 @property (nonatomic, assign) NSInteger section;
 @property (nonatomic, assign) CGFloat maxCellWidth;
-@property (nonatomic, assign) CGFloat headerCellHeight;
+@property (nonatomic, strong) NSMutableArray *headerCellSizes;
+@property (nonatomic, assign) BOOL showAllHeight;
 @end
 static NSInteger const DefaultCellWidth = 80;
-static NSInteger const HeaderCollectionViewTag = 100;
 @implementation FFTableManager
 
 + (instancetype)shareFFTableManagerWithFrame:(CGRect )frame {
@@ -41,6 +43,7 @@ static NSInteger const HeaderCollectionViewTag = 100;
     manager.cellBorderColor = [UIColor grayColor];
     manager.section = 1;
     manager.maxCellWidth = 0;
+    manager.showAllHeight = false;
     return manager;
 }
 
@@ -86,7 +89,7 @@ static NSInteger const HeaderCollectionViewTag = 100;
 
 - (FFTableManager *(^)(UICollectionViewScrollDirection direction))direction {
     return ^FFTableManager *(UICollectionViewScrollDirection direction) {
-//        self.flowLayout.scrollDirection = direction;
+        //        self.flowLayout.scrollDirection = direction;
         return self;
     };
 }
@@ -98,24 +101,67 @@ static NSInteger const HeaderCollectionViewTag = 100;
     };
 }
 
+- (FFTableManager *(^)(BOOL showAll))isShowAll {
+    return ^FFTableManager *(BOOL showAll) {
+        self.showAllHeight = showAll;
+        return self;
+    };
+}
+
+- (instancetype)didSelectHeaderWithBlock:(FFSelectBlock)block {
+    _selectHeaderBlock = block;
+    return self;
+}
+
 - (void)reloadData {
-    
     if ([self.dataSource respondsToSelector:@selector(ffTableManagerNumberOfSection)]) {
         _section = [self.dataSource ffTableManagerNumberOfSection];
     }
-    [self calulateMaxWidth];
-    _headerCellHeight =[self calculateHeaderCellHeight];
-    [self setHeaderViewContent];
+    [self.maxMatrixs removeAllObjects];
+    [self calulateMaxWidthAndHeaderHeight];
     if (!_mainCollectionView) {
         [_superV addSubview:_mainScrollView];
         [_mainScrollView addSubview:self.mainCollectionView];
     } else {
         [_mainCollectionView reloadData];
     }
+    
+    if (_showAllHeight) {
+        [self calulateAllHeight];
+    }
 }
 
-- (void)calulateMaxWidth {
+- (CGFloat)getTableHeight {
+    return [self calulateAllHeight];
+}
+
+- (CGFloat )calulateAllHeight {
+    CGFloat maxHeight = 0;
+    for (NSInteger i = 0; i < _section; i++) {
+        CGFloat headerHeight = [_headerCellSizes[i]CGSizeValue].height;
+        NSInteger row = [self.dataSource ffTableManagerRowWithNumberSection:i];
+        for (NSInteger j = 0; j < row; j++) {
+            CGFloat rowHeight = [self calculateRowMaxHeightWithSection:i row:j + 1];
+            maxHeight += rowHeight;
+        }
+        
+        maxHeight += headerHeight + _margin.top + _margin.bottom;
+    }
+    
+    if (_showAllHeight) {
+        CGRect scrollRect = _mainScrollView.frame;
+        scrollRect.size.height = maxHeight;
+        _mainScrollView.frame = scrollRect;
+        _mainCollectionView.frame = _mainScrollView.bounds;
+    }
+    
+    return maxHeight;
+}
+
+- (void)calulateMaxWidthAndHeaderHeight {
+    [_superV layoutIfNeeded];
     [self.cellWidthsArr removeAllObjects];
+    [self.headerCellSizes removeAllObjects];
     CGFloat itemOffset = _margin.left + _margin.right;
     CGFloat width = _superV.bounds.size.width;
     for (NSInteger i = 0; i < _section; i++) {
@@ -127,24 +173,12 @@ static NSInteger const HeaderCollectionViewTag = 100;
                 itemWidth = DefaultCellWidth;
             }
         } else {
-           itemWidth = (width - itemOffset) / [self.dataSource ffTableManagerColumnSection:i];
+            itemWidth = (width - itemOffset) / [self.dataSource ffTableManagerColumnSection:i];
         }
-        
+        [self calculateHeaderCellHeightWithSection:i textWidth:itemWidth];
         [_cellWidthsArr addObject:@(itemWidth)];
         _maxCellWidth = itemWidth > _maxCellWidth ? itemWidth : _maxCellWidth;
     }
-}
-
-- (void)setHeaderViewContent {
-    if ([self.delegate respondsToSelector:@selector(ffTableManagerSetHeaderView:)]) {
-        self.headerView = [self.delegate ffTableManagerSetHeaderView:self];
-        CGRect headerRect = _headerView.frame;
-        _headerView.frame = CGRectMake(0, 0, headerRect.size.width, headerRect.size.height);
-    } else {
-        self.headerView = [self defaultHeaderView];
-        /// 添加一个带表格的collectionView
-    }
-    [_mainScrollView addSubview:_headerView];
 }
 
 - (CGFloat)calculateRowMaxHeightWithSection:(NSInteger )section row:(NSInteger )row {
@@ -157,7 +191,7 @@ static NSInteger const HeaderCollectionViewTag = 100;
         maxHeight = [_cacheRowHeight[key] integerValue];
         return maxHeight;
     }
-
+    
     for (NSInteger j = 0; j < column; j++) {
         FFMatrix matrix = MatrixMake(row - 1, j);
         FFTableCollectionModel *model = [self.dataSource ffTableManagerSetData:self matrix:matrix];
@@ -171,23 +205,6 @@ static NSInteger const HeaderCollectionViewTag = 100;
     return maxHeight;
 }
 
-- (CGFloat)calculateHeaderCellHeight {
-    NSInteger column = [self.dataSource ffTableManagerColumnSection:0];
-    NSInteger maxHeight = 0;
-    FFTableCollectionModel *model;
-    for (NSInteger i = 0; i < column; i++) {
-        if ([self.dataSource respondsToSelector:@selector(ffTableManagerHeaderViewSetData:index:)]) {
-           model = [self.dataSource ffTableManagerHeaderViewSetData:self index:i];
-        }
-        CGFloat textWidth = [self calculateTextLabelWidthWithSection:0];
-        CGFloat textHeight = [self tableManagerWithLabelTextRectWithSize:CGSizeMake(textWidth, MAXFLOAT) withFontSize:model.font withText:model.content].size.height + 1;
-        maxHeight = textHeight > maxHeight ? textHeight : maxHeight;
-    }
-    
-    maxHeight += _cellTextMargin.top + _cellTextMargin.bottom;
-    return maxHeight;
-}
-
 - (CGFloat)calculateTextLabelWidthWithSection:(NSInteger )section {
     CGFloat textoffset = _cellTextMargin.left + _cellTextMargin.right;
     return [_cellWidthsArr[section]floatValue] - textoffset;
@@ -198,69 +215,98 @@ static NSInteger const HeaderCollectionViewTag = 100;
     return frame;
 }
 
-- (NSInteger )calulateAllCountWithSection:(NSInteger )section {
+- (NSInteger)calulateAllCountWithSection:(NSInteger )section {
     /// 有几排
     NSInteger row = [self.dataSource ffTableManagerRowWithNumberSection:section];
     /// 有几列
     NSInteger column = [self.dataSource ffTableManagerColumnSection:section];
     NSCAssert(column >= 0 || row >= 0, @"不能输入负数");
-    _maxMatrix = MatrixMake(row - 1, column - 1);
+    FFMatrix matrix = MatrixMake(row - 1, column - 1);
+    NSValue *value = [NSValue valueWithBytes:&matrix objCType:@encode(FFMatrix)];
+    [self.maxMatrixs addObject:value];
     return row * column;
 }
 
-- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView{
-    if (collectionView.tag == HeaderCollectionViewTag) {
-        return 1;
+- (void)calculateHeaderCellHeightWithSection:(NSInteger )section textWidth:(CGFloat )textWidth {
+    CGFloat textoffset = _cellTextMargin.left + _cellTextMargin.right;
+    NSMutableArray *datas;
+    if ([self.dataSource respondsToSelector:@selector(ffTableManagerHeaderViewSetData:section:)]) {
+        datas = [self.dataSource ffTableManagerHeaderViewSetData:self section:section];
     }
+    CGFloat maxHeight = 0;
+    
+    for (FFTableCollectionModel *model in datas) {
+        CGFloat textHeight = [self tableManagerWithLabelTextRectWithSize:CGSizeMake(textWidth - textoffset, MAXFLOAT) withFontSize:model.font withText:model.content].size.height + 1;
+        textHeight += _cellTextMargin.top + _cellTextMargin.bottom;
+        maxHeight = textHeight > maxHeight ? textHeight : maxHeight;
+    }
+    CGSize size = CGSizeMake(textWidth, maxHeight);
+    [self.headerCellSizes addObject:@(size)];
+}
+
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView{
     return _section;
 }
 
 - (NSInteger)collectionView:(nonnull UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    if (collectionView.tag == HeaderCollectionViewTag && [self.delegate respondsToSelector:@selector(ffTableManagerHeaderViewSetData:index:)]) {
-        return [self calulateAllCountWithSection:0];
-    }
-    
     return [self calulateAllCountWithSection:section];
+}
+
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
+    if (_headerCellSizes.count) {
+        CGSize size = [_headerCellSizes[section] CGSizeValue];
+        size.height += _margin.top;
+        return size;
+    } else {
+        return CGSizeZero;
+    }
 }
 
 - (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath {
     if ([kind isEqualToString: UICollectionElementKindSectionHeader]) {
-        UICollectionReusableView *view = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:NSStringFromClass([UICollectionReusableView class]) forIndexPath:indexPath];
-        if ([self.delegate respondsToSelector:@selector(ffTableManagerSetCollectionHeaderView:section:)]) {
-            view = [self.delegate ffTableManagerSetCollectionHeaderView:self section:indexPath.section];
+        FFCollectionHeaderView *headerViwe = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:NSStringFromClass([FFCollectionHeaderView class]) forIndexPath:indexPath];
+        NSMutableArray *datas;
+        if ([self.dataSource respondsToSelector:@selector(ffTableManagerHeaderViewSetData:section:)]) {
+            datas = [self.dataSource ffTableManagerHeaderViewSetData:self section:indexPath.section];
         }
-         return view;
+        [headerViwe collectionHeaderViewWithTextWidth: [_cellWidthsArr[indexPath.section]floatValue] cellTextMargin:_cellTextMargin margin:_margin borderColor:_cellBorderColor];
+        
+        [headerViwe showDataWithModel:datas size:[self.headerCellSizes[indexPath.section]CGSizeValue] isHover:true];
+        
+        __weak typeof (self)weakSelf = self;
+        headerViwe.selectBlock = ^(FFMatrix matrix) {
+            if ([weakSelf.delegate respondsToSelector:@selector(didSelectHeaderWithBlock:)]) {
+                [weakSelf.delegate didSelectWithHeaderSection:indexPath.section matrix:matrix];
+            }
+            weakSelf.selectHeaderBlock(matrix, indexPath.section);
+        };
+        return headerViwe;
     }
     return nil;
 }
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    if (collectionView.tag == HeaderCollectionViewTag) {
-        return CGSizeMake([self calculateTextLabelWidthWithSection:0], _headerCellHeight);
-    } else {
-        NSInteger row = ceil(indexPath.row / [self.dataSource ffTableManagerColumnSection:indexPath.section]) + 1;
-        return CGSizeMake([_cellWidthsArr[indexPath.section]floatValue], [self calculateRowMaxHeightWithSection:indexPath.section row:row]);
-    }
-    return CGSizeZero;
+    NSInteger row = ceil(indexPath.row / [self.dataSource ffTableManagerColumnSection:indexPath.section]) + 1;
+    return CGSizeMake([_cellWidthsArr[indexPath.section]floatValue], [self calculateRowMaxHeightWithSection:indexPath.section row:row]);
 }
 
 - (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout minimumLineSpacingForSectionAtIndex:(NSInteger)section {
     return 0;
 }
+
 - (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section {
     return 0;
 }
 
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
-    return _margin;
+    if ([self.dataSource respondsToSelector:@selector(ffTableManagerHeaderViewSetData:section:)]) {
+        return UIEdgeInsetsMake(0, _margin.left, _margin.bottom, _margin.right);
+    } else {
+        return _margin;
+    }
 }
 
 - (nonnull __kindof UICollectionViewCell *)collectionView:(nonnull UICollectionView *)collectionView cellForItemAtIndexPath:(nonnull NSIndexPath *)indexPath {
-    if (collectionView.tag == HeaderCollectionViewTag) {
-        
-    } else {
-        
-    }
     FFTableCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:NSStringFromClass([FFTableCollectionViewCell class]) forIndexPath:indexPath];
     NSInteger sourceColumn = [self.dataSource ffTableManagerColumnSection:indexPath.section];
     NSInteger row = ceil(indexPath.row / sourceColumn);
@@ -268,45 +314,49 @@ static NSInteger const HeaderCollectionViewTag = 100;
     FFMatrix matrix = MatrixMake(row, column);
     FFTableCollectionModel *model = [self.dataSource ffTableManagerSetData:self matrix:matrix];
     cell.currentMatrix = matrix;
-    cell.maxMatrix = _maxMatrix;
+    FFMatrix maxMatrix;
+    [_maxMatrixs[indexPath.section]getValue:&maxMatrix];
+    cell.maxMatrix = maxMatrix;
+    cell.haveHeader = [self.dataSource respondsToSelector:@selector(ffTableManagerHeaderViewSetData:section:)];
     NSString *key = [NSString stringWithFormat:@"%ld-%ld", indexPath.section, row + 1];
     [cell showDataWithModel:model borderColor:_cellBorderColor edge:_cellTextMargin size:CGSizeMake([_cellWidthsArr[indexPath.section]floatValue], [_cacheRowHeight[key] floatValue])];
     return cell;
 }
 
-- (UICollectionView *)defaultHeaderView {
-    UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc]init];
+- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
+    NSInteger sourceColumn = [self.dataSource ffTableManagerColumnSection:indexPath.section];
+    NSInteger row = ceil(indexPath.row / sourceColumn);
+    NSInteger column = indexPath.row % [self.dataSource ffTableManagerColumnSection:indexPath.section];
+    FFMatrix matrix = MatrixMake(row, column);
     
-    CGFloat itemWidth = _maxCellWidth;
-    NSInteger column = [self.dataSource ffTableManagerColumnSection:0];
-    CGFloat width = column * itemWidth;
-    width += _margin.left + _margin.right;
-    width = MAX(_mainScrollView.bounds.size.width, width);
-    UICollectionView *mainCollectionView = [[UICollectionView alloc]initWithFrame:CGRectMake(0, 0, _cellAverageItem ? _mainScrollView.bounds.size.width : MAX(_mainScrollView.bounds.size.width, width), _headerCellHeight) collectionViewLayout:layout];
-    mainCollectionView.tag = HeaderCollectionViewTag;
-    mainCollectionView.scrollEnabled = false;
-    mainCollectionView.delegate = self;
-    mainCollectionView.dataSource = self;
-    mainCollectionView.backgroundColor = [UIColor whiteColor];
-    [mainCollectionView registerNib:[UINib nibWithNibName:NSStringFromClass([FFTableCollectionViewCell class]) bundle:nil] forCellWithReuseIdentifier:NSStringFromClass([FFTableCollectionViewCell class])];
-    return mainCollectionView;
+    if ([self.delegate respondsToSelector:@selector(didSelectWithSection:matrix:)]) {
+        [self.delegate didSelectWithSection:indexPath.section matrix:matrix];
+    }
+    
+    if (self.selectBlock) {
+        self.selectBlock(matrix, indexPath.section);
+    }
 }
 
 - (UICollectionView *)mainCollectionView {
     if (!_mainCollectionView) {
         UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc]init];
+        _mainCollectionView.showsVerticalScrollIndicator = false;
+        _mainCollectionView.showsHorizontalScrollIndicator = false;
+        layout.sectionHeadersPinToVisibleBoundsAll = !self.showAllHeight;
         CGFloat itemWidth = _maxCellWidth;
         NSInteger column = [self.dataSource ffTableManagerColumnSection:0];
         CGFloat width = column * itemWidth;
         width += _margin.left + _margin.right;
         width = MAX(_mainScrollView.bounds.size.width, width);
         _mainScrollView.contentSize = CGSizeMake(width, 0);
-        _mainCollectionView = [[UICollectionView alloc]initWithFrame:CGRectMake(0, _headerView.bounds.size.height, _cellAverageItem ? _mainScrollView.bounds.size.width : MAX(_mainScrollView.bounds.size.width, width), _mainScrollView.bounds.size.height - _headerView.bounds.size.height) collectionViewLayout:layout];
+        _mainCollectionView = [[UICollectionView alloc]initWithFrame:CGRectMake(0, 0, _cellAverageItem ? _mainScrollView.bounds.size.width : MAX(_mainScrollView.bounds.size.width, width), _mainScrollView.bounds.size.height) collectionViewLayout:layout];
         _mainCollectionView.delegate = self;
         _mainCollectionView.dataSource = self;
         _mainCollectionView.backgroundColor = [UIColor whiteColor];
         [_mainCollectionView registerNib:[UINib nibWithNibName:NSStringFromClass([FFTableCollectionViewCell class]) bundle:nil] forCellWithReuseIdentifier:NSStringFromClass([FFTableCollectionViewCell class])];
-        [_mainCollectionView registerClass:[UICollectionReusableView class] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:NSStringFromClass([UICollectionReusableView class])];
+        [_mainCollectionView registerClass:[FFCollectionHeaderView class] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:NSStringFromClass([FFCollectionHeaderView class])];
+        _mainCollectionView.scrollEnabled = !self.showAllHeight;
     }
     return _mainCollectionView;
 }
@@ -320,8 +370,9 @@ static NSInteger const HeaderCollectionViewTag = 100;
 
 - (UIScrollView *)mainScrollView {
     if (!_mainScrollView) {
-        _mainScrollView = [[UIScrollView alloc]init];
+        _mainScrollView = [[UIScrollView alloc]initWithFrame:CGRectZero];
         _mainScrollView.delegate = self;
+        _mainScrollView.backgroundColor = [UIColor whiteColor];
         _mainScrollView.showsVerticalScrollIndicator = false;
         _mainScrollView.showsHorizontalScrollIndicator = false;
     }
@@ -340,6 +391,20 @@ static NSInteger const HeaderCollectionViewTag = 100;
         _cellWidthsArr = [NSMutableArray array];
     }
     return _cellWidthsArr;
+}
+
+- (NSMutableArray *)headerCellSizes {
+    if (!_headerCellSizes) {
+        _headerCellSizes = [NSMutableArray array];
+    }
+    return _headerCellSizes;
+}
+
+- (NSMutableArray *)maxMatrixs {
+    if (!_maxMatrixs) {
+        _maxMatrixs = [NSMutableArray array];
+    }
+    return _maxMatrixs;
 }
 
 @end

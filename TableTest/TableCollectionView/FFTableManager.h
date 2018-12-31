@@ -10,7 +10,6 @@
 #import "FFTableCollectionModel.h"
 NS_ASSUME_NONNULL_BEGIN
 @class FFTableManager;
-typedef void(^FFSelectBlock)(NSInteger row, NSInteger index);
 
 struct FFMatrix {
     NSInteger row;
@@ -26,7 +25,7 @@ MatrixMake(NSInteger row, CGFloat column)
     matrix.column = column;
     return matrix;
 }
-
+typedef void(^FFSelectBlock)(FFMatrix matrix, NSInteger section);
 @protocol FFTableManagerDataSource <NSObject>
 
 @required
@@ -62,16 +61,24 @@ MatrixMake(NSInteger row, CGFloat column)
  */
 - (CGFloat )ffTableManagerItemWidthWithSection:(NSInteger )section;
 
-- (FFTableCollectionModel *)ffTableManagerHeaderViewSetData:(FFTableManager *)FFTableManager index:(NSInteger )index;
+/**
+ 设置每组头的数据（和子数据数量一致）
+
+ @param FFTableManager 管理类
+ @param section 组
+ @return 数据
+ */
+- (NSMutableArray <FFTableCollectionModel *>*)ffTableManagerHeaderViewSetData:(FFTableManager *)FFTableManager section:(NSInteger )section;
 @end
 
 @protocol FFTableManagerDelegate <NSObject>
 
 @optional
-- (UIView *)ffTableManagerSetHeaderView:(FFTableManager *)FFTableManager;
 - (UICollectionReusableView *)ffTableManagerSetCollectionHeaderView:(FFTableManager *)ffTableCollectionView section:(NSInteger )section;
 - (CGFloat )ffTableManagerWithItemWidth;
 - (UIEdgeInsets )ffTableManagerWithsetMargin;
+- (void)didSelectWithSection:(NSInteger )section matrix:(FFMatrix )matrix;
+- (void)didSelectWithHeaderSection:(NSInteger )section matrix:(FFMatrix )matrix;
 @end
 
 @interface FFTableManager : NSObject
@@ -80,13 +87,15 @@ MatrixMake(NSInteger row, CGFloat column)
 @property (nonatomic, weak) id<FFTableManagerDataSource> dataSource;
 @property (nonatomic, weak) id<FFTableManagerDelegate> delegate;
 
-- (FFTableManager *(^)(BOOL showHeader))isShowHeader;
+- (FFTableManager *(^)(BOOL showAll))isShowAll;
 - (FFTableManager *(^)(UIColor *borderColor))borderColor;
 - (FFTableManager *(^)(BOOL averageItem))averageItem;
 - (FFTableManager *(^)(UIView *sView))sView;
 - (FFTableManager *(^)(UIEdgeInsets edge))setTableMargin;
 - (FFTableManager *(^)(UIEdgeInsets edge))setTableCellTextMargin;
 - (instancetype)didSelectWithBlock:(FFSelectBlock)block;
+- (instancetype)didSelectHeaderWithBlock:(FFSelectBlock)block;
+- (CGFloat )getTableHeight;
 - (void)reloadData;
 @end
 

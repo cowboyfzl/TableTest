@@ -12,6 +12,7 @@
 @interface ViewController () <FFTableManagerDataSource, FFTableManagerDelegate>
 @property (nonatomic, strong) NSMutableArray *datas;
 @property (nonatomic, strong) NSMutableArray *headeraaa;
+@property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
 @property (nonatomic, strong) FFTableManager *manager;
 @end
 static NSInteger const Column = 6;
@@ -20,13 +21,27 @@ static NSInteger const Row = 50;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    FFTableManager *manager = [FFTableManager shareFFTableManagerWithFrame:self.view.bounds sView:self.view];
+    [self.scrollView layoutIfNeeded];
+    FFTableManager *manager = [FFTableManager shareFFTableManagerWithFrame:CGRectMake(0, 0, self.scrollView.bounds.size.width, self.scrollView.bounds.size.height - 20) sView:self.scrollView];
     manager.delegate = self;
     manager.dataSource = self;
+    manager.averageItem(false).isShowAll(false);
     [manager reloadData];
+    self.scrollView.contentSize = CGSizeMake(0, [manager getTableHeight]);
     _manager = manager;
+    
+    [[manager didSelectWithBlock:^(FFMatrix matrix, NSInteger section) {
+        NSLog(@"%lu....%lu!!!!%lu",matrix.column, matrix.row, section);
+    }] didSelectHeaderWithBlock:^(FFMatrix matrix, NSInteger section) {
+        NSLog(@"%lu....%lu!!!!%lu",matrix.column, matrix.row, section);
+    }];
+    
+    
 }
 
+- (NSInteger)ffTableManagerNumberOfSection {
+    return 1;
+}
 
 - (NSInteger)ffTableManagerColumnSection:(NSInteger)section {
     return Column;
@@ -40,8 +55,8 @@ static NSInteger const Row = 50;
     return self.datas[matrix.row][matrix.column];
 }
 
-- (FFTableCollectionModel *)ffTableManagerHeaderViewSetData:(FFTableManager *)FFTableManager index:(NSInteger)index {
-    return @[@"asdasd", @"萨达撒大所多", @"爱上框架的哈萨克接电话", @"sakldjlaksdj", @"sakldjlaksdj", @"sakldjlaksdj"][index];
+- (NSMutableArray<FFTableCollectionModel *> *)ffTableManagerHeaderViewSetData:(FFTableManager *)FFTableManager section:(NSInteger)section {
+    return self.headeraaa;
 }
 
 - (NSMutableArray *)headeraaa {

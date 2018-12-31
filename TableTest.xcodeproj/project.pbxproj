@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		118396B721D9B0CF008E28B9 /* UICollectionViewFlowLayout+Add.m in Sources */ = {isa = PBXBuildFile; fileRef = 118396B521D9B0CE008E28B9 /* UICollectionViewFlowLayout+Add.m */; };
+		118396BB21D9B469008E28B9 /* FFCollectionHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 118396B921D9B469008E28B9 /* FFCollectionHeaderView.m */; };
 		501516DD21D32B5200A14A40 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 501516DC21D32B5200A14A40 /* AppDelegate.m */; };
 		501516E021D32B5200A14A40 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 501516DF21D32B5200A14A40 /* ViewController.m */; };
 		501516E321D32B5200A14A40 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 501516E121D32B5200A14A40 /* Main.storyboard */; };
@@ -40,6 +42,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		118396B521D9B0CE008E28B9 /* UICollectionViewFlowLayout+Add.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UICollectionViewFlowLayout+Add.m"; sourceTree = "<group>"; };
+		118396B621D9B0CF008E28B9 /* UICollectionViewFlowLayout+Add.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UICollectionViewFlowLayout+Add.h"; sourceTree = "<group>"; };
+		118396B821D9B469008E28B9 /* FFCollectionHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FFCollectionHeaderView.h; sourceTree = "<group>"; };
+		118396B921D9B469008E28B9 /* FFCollectionHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FFCollectionHeaderView.m; sourceTree = "<group>"; };
 		501516D821D32B5200A14A40 /* TableTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TableTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		501516DB21D32B5200A14A40 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		501516DC21D32B5200A14A40 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -150,6 +156,8 @@
 		5015171221D32E6C00A14A40 /* TableCollectionView */ = {
 			isa = PBXGroup;
 			children = (
+				118396B621D9B0CF008E28B9 /* UICollectionViewFlowLayout+Add.h */,
+				118396B521D9B0CE008E28B9 /* UICollectionViewFlowLayout+Add.m */,
 				5015171321D32EB200A14A40 /* FFTableManager.h */,
 				5015171421D32EB200A14A40 /* FFTableManager.m */,
 				5015171621D3640F00A14A40 /* FFTableCollectionModel.h */,
@@ -159,6 +167,8 @@
 				5015171B21D370D200A14A40 /* FFTableCollectionViewCell.xib */,
 				5015171E21D37AE000A14A40 /* FFTableCollectionViewFlowLayout.h */,
 				5015171F21D37AE000A14A40 /* FFTableCollectionViewFlowLayout.m */,
+				118396B821D9B469008E28B9 /* FFCollectionHeaderView.h */,
+				118396B921D9B469008E28B9 /* FFCollectionHeaderView.m */,
 			);
 			path = TableCollectionView;
 			sourceTree = "<group>";
@@ -296,8 +306,10 @@
 			files = (
 				5015171821D3641000A14A40 /* FFTableCollectionModel.m in Sources */,
 				501516E021D32B5200A14A40 /* ViewController.m in Sources */,
+				118396BB21D9B469008E28B9 /* FFCollectionHeaderView.m in Sources */,
 				5015172021D37AE000A14A40 /* FFTableCollectionViewFlowLayout.m in Sources */,
 				501516EB21D32B5800A14A40 /* main.m in Sources */,
+				118396B721D9B0CF008E28B9 /* UICollectionViewFlowLayout+Add.m in Sources */,
 				501516DD21D32B5200A14A40 /* AppDelegate.m in Sources */,
 				5015171521D32EB200A14A40 /* FFTableManager.m in Sources */,
 				5015171C21D370D200A14A40 /* FFTableCollectionViewCell.m in Sources */,
