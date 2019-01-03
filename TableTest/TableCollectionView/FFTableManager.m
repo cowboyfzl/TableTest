@@ -36,7 +36,10 @@ static NSInteger const DefaultCellWidth = 80;
 
 + (instancetype)shareFFTableManagerWithFrame:(CGRect )frame {
     FFTableManager *manager = [self new];
-    manager.mainScrollView.frame = frame;
+    CGRect rect = frame;
+    rect.origin.y -= 1;
+    rect.size.height -= 1;
+    manager.mainScrollView.frame = rect;
     manager.cellAverageItem = false;
     manager.cellTextMargin = UIEdgeInsetsMake(5, 5, 5, 5);
     manager.margin = UIEdgeInsetsMake(5, 5, 5, 5);
@@ -275,10 +278,10 @@ static NSInteger const DefaultCellWidth = 80;
         
         __weak typeof (self)weakSelf = self;
         headerViwe.selectBlock = ^(FFMatrix matrix) {
-            if ([weakSelf.delegate respondsToSelector:@selector(didSelectHeaderWithBlock:)]) {
-                [weakSelf.delegate didSelectWithHeaderSection:indexPath.section matrix:matrix];
+            if ([weakSelf.delegate respondsToSelector:@selector(didSelectWithCollectionViewHeader:section:matrix:)]) {
+                [weakSelf.delegate didSelectWithCollectionViewHeader:collectionView section:indexPath.section matrix:matrix];
             }
-            weakSelf.selectHeaderBlock(matrix, indexPath.section);
+            weakSelf.selectHeaderBlock(collectionView, matrix, indexPath.section);
         };
         return headerViwe;
     }
@@ -329,20 +332,18 @@ static NSInteger const DefaultCellWidth = 80;
     NSInteger column = indexPath.row % [self.dataSource ffTableManagerColumnSection:indexPath.section];
     FFMatrix matrix = MatrixMake(row, column);
     
-    if ([self.delegate respondsToSelector:@selector(didSelectWithSection:matrix:)]) {
-        [self.delegate didSelectWithSection:indexPath.section matrix:matrix];
+    if ([self.delegate respondsToSelector:@selector(didSelectWithCollectionView:section:matrix:)]) {
+        [self.delegate didSelectWithCollectionView:collectionView section:indexPath.section matrix:matrix];
     }
     
     if (self.selectBlock) {
-        self.selectBlock(matrix, indexPath.section);
+        self.selectBlock(collectionView, matrix, indexPath.section);
     }
 }
 
 - (UICollectionView *)mainCollectionView {
     if (!_mainCollectionView) {
         UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc]init];
-        _mainCollectionView.showsVerticalScrollIndicator = false;
-        _mainCollectionView.showsHorizontalScrollIndicator = false;
         layout.sectionHeadersPinToVisibleBoundsAll = !self.showAllHeight;
         CGFloat itemWidth = _maxCellWidth;
         NSInteger column = [self.dataSource ffTableManagerColumnSection:0];
@@ -351,6 +352,8 @@ static NSInteger const DefaultCellWidth = 80;
         width = MAX(_mainScrollView.bounds.size.width, width);
         _mainScrollView.contentSize = CGSizeMake(width, 0);
         _mainCollectionView = [[UICollectionView alloc]initWithFrame:CGRectMake(0, 0, _cellAverageItem ? _mainScrollView.bounds.size.width : MAX(_mainScrollView.bounds.size.width, width), _mainScrollView.bounds.size.height) collectionViewLayout:layout];
+        _mainCollectionView.showsVerticalScrollIndicator = false;
+        _mainCollectionView.showsHorizontalScrollIndicator = false;
         _mainCollectionView.delegate = self;
         _mainCollectionView.dataSource = self;
         _mainCollectionView.backgroundColor = [UIColor whiteColor];

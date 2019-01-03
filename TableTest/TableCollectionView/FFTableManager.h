@@ -25,7 +25,7 @@ MatrixMake(NSInteger row, CGFloat column)
     matrix.column = column;
     return matrix;
 }
-typedef void(^FFSelectBlock)(FFMatrix matrix, NSInteger section);
+typedef void(^FFSelectBlock)(UICollectionView *collectionView, FFMatrix matrix, NSInteger section);
 @protocol FFTableManagerDataSource <NSObject>
 
 @required
@@ -77,8 +77,8 @@ typedef void(^FFSelectBlock)(FFMatrix matrix, NSInteger section);
 - (UICollectionReusableView *)ffTableManagerSetCollectionHeaderView:(FFTableManager *)ffTableCollectionView section:(NSInteger )section;
 - (CGFloat )ffTableManagerWithItemWidth;
 - (UIEdgeInsets )ffTableManagerWithsetMargin;
-- (void)didSelectWithSection:(NSInteger )section matrix:(FFMatrix )matrix;
-- (void)didSelectWithHeaderSection:(NSInteger )section matrix:(FFMatrix )matrix;
+- (void)didSelectWithCollectionView:(UICollectionView *)collectionView section:(NSInteger )section matrix:(FFMatrix )matrix;
+- (void)didSelectWithCollectionViewHeader:(UICollectionView *)collectionView section:(NSInteger )section matrix:(FFMatrix )matrix;
 @end
 
 @interface FFTableManager : NSObject
