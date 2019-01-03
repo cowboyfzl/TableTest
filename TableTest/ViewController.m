@@ -30,9 +30,9 @@ static NSInteger const Row = 50;
     self.scrollView.contentSize = CGSizeMake(0, [manager getTableHeight]);
     _manager = manager;
     
-    [[manager didSelectWithBlock:^(FFMatrix matrix, NSInteger section) {
+    [[manager didSelectWithBlock:^(UICollectionView *collectionView, FFMatrix matrix, NSInteger section) {
         NSLog(@"%lu....%lu!!!!%lu",matrix.column, matrix.row, section);
-    }] didSelectHeaderWithBlock:^(FFMatrix matrix, NSInteger section) {
+    }] didSelectHeaderWithBlock:^(UICollectionView *collectionView, FFMatrix matrix, NSInteger section) {
         NSLog(@"%lu....%lu!!!!%lu",matrix.column, matrix.row, section);
     }];
     
@@ -62,7 +62,7 @@ static NSInteger const Row = 50;
 - (NSMutableArray *)headeraaa {
     if (!_headeraaa) {
         _headeraaa = [NSMutableArray array];
-        for (NSString *aaa in @[@"asdasd", @"萨达撒大所多", @"爱上框架的哈萨克接电话", @"sakldjlaksdj", @"sakldjlaksdj", @"sakldjlaksdj"]) {
+        for (NSString *aaa in @[@"姓名", @"部门", @"目标拜访", @"实际完成", @"最后一次跟进尿失禁", @"完成率"]) {
             FFTableCollectionModel *model = [FFTableCollectionModel tableCollectionModelWithContent:aaa textColor:[UIColor blackColor] font:[UIFont systemFontOfSize:14] bgColor:[UIColor whiteColor]];
             [_headeraaa addObject:model];
         }
