@@ -44,6 +44,13 @@ typedef void(^FFSelectBlock)(UICollectionView *collectionView, FFMatrix matrix, 
  */
 - (NSInteger)ffTableManagerColumnSection:(NSInteger)section;
 
+/**
+ 每条数据
+
+ @param FFTableManager 当前类
+ @param matrix item的位置
+ @return 对应的模型
+ */
 - (FFTableCollectionModel *)ffTableManagerSetData:(FFTableManager *)FFTableManager matrix:(FFMatrix )matrix;
 
 @optional
@@ -54,12 +61,16 @@ typedef void(^FFSelectBlock)(UICollectionView *collectionView, FFMatrix matrix, 
  */
 - (NSInteger)ffTableManagerNumberOfSection;
 
-/**
- 每组的cell的宽度
 
- @return cell的宽度
+/**
+ 每组 每列cell的宽度
+
+ @param column 多少列
+ @param section 第几组
+ @param margin collectiony边缘偏移量
+ @return 宽度
  */
-- (CGFloat )ffTableManagerItemWidthWithSection:(NSInteger )section;
+- (CGFloat )ffTableManagerItemWidthWithColumn:(NSInteger )column Section:(NSInteger )section margin:(UIEdgeInsets )margin;
 
 /**
  设置每组头的数据（和子数据数量一致）
@@ -75,7 +86,6 @@ typedef void(^FFSelectBlock)(UICollectionView *collectionView, FFMatrix matrix, 
 
 @optional
 - (UICollectionReusableView *)ffTableManagerSetCollectionHeaderView:(FFTableManager *)ffTableCollectionView section:(NSInteger )section;
-- (CGFloat )ffTableManagerWithItemWidth;
 - (UIEdgeInsets )ffTableManagerWithsetMargin;
 - (void)didSelectWithCollectionView:(UICollectionView *)collectionView section:(NSInteger )section matrix:(FFMatrix )matrix;
 - (void)didSelectWithCollectionViewHeader:(UICollectionView *)collectionView section:(NSInteger )section matrix:(FFMatrix )matrix;
@@ -86,7 +96,8 @@ typedef void(^FFSelectBlock)(UICollectionView *collectionView, FFMatrix matrix, 
 + (instancetype )shareFFTableManagerWithFrame:(CGRect )frame sView:(UIView *)sView;
 @property (nonatomic, weak) id<FFTableManagerDataSource> dataSource;
 @property (nonatomic, weak) id<FFTableManagerDelegate> delegate;
-
+@property (nonatomic, strong) UICollectionView *mainCollectionView;
+@property (nonatomic, strong) UIScrollView *mainScrollView;
 - (FFTableManager *(^)(BOOL showAll))isShowAll;
 - (FFTableManager *(^)(UIColor *borderColor))borderColor;
 - (FFTableManager *(^)(BOOL averageItem))averageItem;

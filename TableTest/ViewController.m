@@ -27,20 +27,12 @@ static NSInteger const Row = 50;
     manager.dataSource = self;
     manager.averageItem(false).isShowAll(false);
     [manager reloadData];
-    self.scrollView.contentSize = CGSizeMake(0, [manager getTableHeight]);
     _manager = manager;
-    
     [[manager didSelectWithBlock:^(UICollectionView *collectionView, FFMatrix matrix, NSInteger section) {
         NSLog(@"%lu....%lu!!!!%lu",matrix.column, matrix.row, section);
     }] didSelectHeaderWithBlock:^(UICollectionView *collectionView, FFMatrix matrix, NSInteger section) {
         NSLog(@"%lu....%lu!!!!%lu",matrix.column, matrix.row, section);
     }];
-    
-    
-}
-
-- (NSInteger)ffTableManagerNumberOfSection {
-    return 1;
 }
 
 - (NSInteger)ffTableManagerColumnSection:(NSInteger)section {
@@ -49,6 +41,23 @@ static NSInteger const Row = 50;
 
 - (NSInteger)ffTableManagerRowWithNumberSection:(NSInteger)section {
     return Row;
+}
+
+- (CGFloat )ffTableManagerItemWidthWithColumn:(NSInteger )column Section:(NSInteger )section margin:(UIEdgeInsets )margin {
+    CGFloat w = self.view.bounds.size.width - margin.left - margin.right;
+    CGFloat cellWidth = w / Column;
+    switch (column) {
+        case 0:
+            return cellWidth * 2;
+            break;
+            
+        default:
+        {
+            CGFloat width = (w - cellWidth * 2) / (Column  - 1);
+            return width;
+        }
+            break;
+    }
 }
 
 - (nonnull FFTableCollectionModel *)ffTableManagerSetData:(nonnull FFTableManager *)FFTableManager matrix:(FFMatrix)matrix {

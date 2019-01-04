@@ -16,7 +16,7 @@
 @property (nonatomic, assign) UIEdgeInsets cellTextMargin;
 @property (nonatomic, assign) UIEdgeInsets margin;
 @property (nonatomic, strong) UIColor *borderColor;
-@property (nonatomic, assign) CGSize size;
+@property (nonatomic, strong) NSArray *sizes;
 @end
 
 @implementation FFCollectionHeaderView
@@ -41,7 +41,7 @@
     FFTableCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:NSStringFromClass([FFTableCollectionViewCell class]) forIndexPath:indexPath];
     cell.currentMatrix = MatrixMake(0, indexPath.row % _datas.count);
     cell.maxMatrix = MatrixMake(0, _datas.count);
-    [cell showDataWithModel:_datas[indexPath.row] borderColor:_borderColor edge:_cellTextMargin size:_size];
+    [cell showDataWithModel:_datas[indexPath.row] borderColor:_borderColor edge:_cellTextMargin size:[_sizes[indexPath.row]CGSizeValue]];
     return cell;
 }
 
@@ -57,7 +57,7 @@
 }
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    return _size;
+    return [_sizes[indexPath.row]CGSizeValue];
 }
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -67,8 +67,8 @@
     }
 }
 
-- (void )showDataWithModel:(NSMutableArray<FFTableCollectionModel *> *)models size:(CGSize )size isHover:(BOOL )isHover {
-    _size = size;
+- (void)showDataWithModel:(NSMutableArray<FFTableCollectionModel *> *)models sizes:(NSArray *)sizes isHover:(BOOL )isHover {
+    _sizes = sizes;
     _datas = models;
     [self.headerCollecionView reloadData];
 }
