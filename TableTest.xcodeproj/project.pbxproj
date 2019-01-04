@@ -22,6 +22,8 @@
 		5015171C21D370D200A14A40 /* FFTableCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 5015171A21D370D200A14A40 /* FFTableCollectionViewCell.m */; };
 		5015171D21D370D200A14A40 /* FFTableCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5015171B21D370D200A14A40 /* FFTableCollectionViewCell.xib */; };
 		5015172021D37AE000A14A40 /* FFTableCollectionViewFlowLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = 5015171F21D37AE000A14A40 /* FFTableCollectionViewFlowLayout.m */; };
+		50EE094C21DF41D6004F1EF3 /* HeaderCollectionReusableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 50EE094A21DF41D6004F1EF3 /* HeaderCollectionReusableView.m */; };
+		50EE095421DF4E79004F1EF3 /* HeaderCollectionReusableView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 50EE095321DF4E79004F1EF3 /* HeaderCollectionReusableView.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,6 +73,9 @@
 		5015171B21D370D200A14A40 /* FFTableCollectionViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = FFTableCollectionViewCell.xib; sourceTree = "<group>"; };
 		5015171E21D37AE000A14A40 /* FFTableCollectionViewFlowLayout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FFTableCollectionViewFlowLayout.h; sourceTree = "<group>"; };
 		5015171F21D37AE000A14A40 /* FFTableCollectionViewFlowLayout.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FFTableCollectionViewFlowLayout.m; sourceTree = "<group>"; };
+		50EE094921DF41D6004F1EF3 /* HeaderCollectionReusableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HeaderCollectionReusableView.h; sourceTree = "<group>"; };
+		50EE094A21DF41D6004F1EF3 /* HeaderCollectionReusableView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HeaderCollectionReusableView.m; sourceTree = "<group>"; };
+		50EE095321DF4E79004F1EF3 /* HeaderCollectionReusableView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = HeaderCollectionReusableView.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,6 +131,9 @@
 				501516DC21D32B5200A14A40 /* AppDelegate.m */,
 				501516DE21D32B5200A14A40 /* ViewController.h */,
 				501516DF21D32B5200A14A40 /* ViewController.m */,
+				50EE094921DF41D6004F1EF3 /* HeaderCollectionReusableView.h */,
+				50EE094A21DF41D6004F1EF3 /* HeaderCollectionReusableView.m */,
+				50EE095321DF4E79004F1EF3 /* HeaderCollectionReusableView.xib */,
 				501516E121D32B5200A14A40 /* Main.storyboard */,
 				501516E421D32B5800A14A40 /* Assets.xcassets */,
 				501516E621D32B5800A14A40 /* LaunchScreen.storyboard */,
@@ -277,6 +285,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				501516E821D32B5800A14A40 /* LaunchScreen.storyboard in Resources */,
+				50EE095421DF4E79004F1EF3 /* HeaderCollectionReusableView.xib in Resources */,
 				5015171D21D370D200A14A40 /* FFTableCollectionViewCell.xib in Resources */,
 				501516E521D32B5800A14A40 /* Assets.xcassets in Resources */,
 				501516E321D32B5200A14A40 /* Main.storyboard in Resources */,
@@ -304,6 +313,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				50EE094C21DF41D6004F1EF3 /* HeaderCollectionReusableView.m in Sources */,
 				5015171821D3641000A14A40 /* FFTableCollectionModel.m in Sources */,
 				501516E021D32B5200A14A40 /* ViewController.m in Sources */,
 				118396BB21D9B469008E28B9 /* FFCollectionHeaderView.m in Sources */,

@@ -85,7 +85,9 @@ typedef void(^FFSelectBlock)(UICollectionView *collectionView, FFMatrix matrix, 
 @protocol FFTableManagerDelegate <NSObject>
 
 @optional
-- (UICollectionReusableView *)ffTableManagerSetCollectionHeaderView:(FFTableManager *)ffTableCollectionView section:(NSInteger )section;
+- (Class )ffTableManagerRegistClassWithSection:(NSInteger )section;
+- (void )ffTableManagerSetCollectionHeaderView:(UICollectionReusableView *)ffTableCollectionView section:(NSInteger )section;
+- (CGFloat )ffTableManagerHeaderHeightWithSction:(NSInteger )section;
 - (UIEdgeInsets )ffTableManagerWithsetMargin;
 - (void)didSelectWithCollectionView:(UICollectionView *)collectionView section:(NSInteger )section matrix:(FFMatrix )matrix;
 - (void)didSelectWithCollectionViewHeader:(UICollectionView *)collectionView section:(NSInteger )section matrix:(FFMatrix )matrix;

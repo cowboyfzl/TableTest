@@ -144,6 +144,17 @@ static NSInteger const DefaultCellWidth = 80;
         for (NSNumber *width in _cellWidthsArr[i]) {
             sectionWidth += [width floatValue];
         }
+        
+        if ([self.delegate respondsToSelector:@selector(ffTableManagerRegistClassWithSection:)] && [self.delegate respondsToSelector:@selector(ffTableManagerSetCollectionHeaderView:section:)]) {
+            Class class = [self.delegate ffTableManagerRegistClassWithSection:i];
+            NSString *nibPath = [[NSBundle mainBundle]pathForResource:NSStringFromClass(class) ofType:@"nib"];
+            if (nibPath.length) {
+                [_mainCollectionView registerNib:[UINib nibWithNibName:NSStringFromClass(class) bundle:nil] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:NSStringFromClass(class)];
+            } else {
+                [_mainCollectionView registerClass:class forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:NSStringFromClass(class)];
+            }
+        }
+        
         itemWidth = sectionWidth > itemWidth ? sectionWidth : itemWidth;
     }
     
@@ -285,6 +296,12 @@ static NSInteger const DefaultCellWidth = 80;
 }
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
+    
+    if ([self.delegate respondsToSelector:@selector(ffTableManagerHeaderHeightWithSction:)]) {
+        CGFloat height = [self.delegate ffTableManagerHeaderHeightWithSction:section];
+        return CGSizeMake(collectionView.bounds.size.width, height);
+    }
+    
     if (_headerCellSizes.count) {
         CGSize size = [_headerCellSizes[section][0]CGSizeValue];
         size.height += _margin.top;
@@ -297,6 +314,14 @@ static NSInteger const DefaultCellWidth = 80;
 
 - (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath {
     if ([kind isEqualToString: UICollectionElementKindSectionHeader]) {
+        
+        if ([self.delegate respondsToSelector:@selector(ffTableManagerSetCollectionHeaderView:section:)] && [self.delegate respondsToSelector:@selector(ffTableManagerRegistClassWithSection:)]) {
+            Class class = [self.delegate ffTableManagerRegistClassWithSection:indexPath.section];
+            UICollectionReusableView *headerViwe = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:NSStringFromClass(class) forIndexPath:indexPath];
+            [self.delegate ffTableManagerSetCollectionHeaderView:headerViwe section:indexPath.section];
+            return headerViwe;
+        }
+        
         FFCollectionHeaderView *headerViwe = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:NSStringFromClass([FFCollectionHeaderView class]) forIndexPath:indexPath];
         NSMutableArray *datas;
         if ([self.dataSource respondsToSelector:@selector(ffTableManagerHeaderViewSetData:section:)]) {

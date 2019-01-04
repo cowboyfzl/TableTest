@@ -8,7 +8,7 @@
 
 #import "ViewController.h"
 #import "FFTableManager.h"
-
+#import "HeaderCollectionReusableView.h"
 @interface ViewController () <FFTableManagerDataSource, FFTableManagerDelegate>
 @property (nonatomic, strong) NSMutableArray *datas;
 @property (nonatomic, strong) NSMutableArray *headeraaa;
@@ -58,6 +58,18 @@ static NSInteger const Row = 50;
         }
             break;
     }
+}
+
+- (Class)ffTableManagerRegistClassWithSection:(NSInteger)section {
+    return [HeaderCollectionReusableView class];
+}
+
+- (void )ffTableManagerSetCollectionHeaderView:(UICollectionReusableView *)ffTableCollectionView section:(NSInteger)section {
+    
+}
+
+- (CGFloat)ffTableManagerHeaderHeightWithSction:(NSInteger)section {
+    return 200;
 }
 
 - (nonnull FFTableCollectionModel *)ffTableManagerSetData:(nonnull FFTableManager *)FFTableManager matrix:(FFMatrix)matrix {
