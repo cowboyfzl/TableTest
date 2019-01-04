@@ -119,12 +119,12 @@ static NSInteger const DefaultCellWidth = 80;
     }
     [self.maxMatrixs removeAllObjects];
     [self calulateMaxWidthAndHeaderHeight];
-    if (!_mainCollectionView) {
+    if (!_mainCollectionView.superview) {
         [_superV addSubview:_mainScrollView];
         [_mainScrollView addSubview:self.mainCollectionView];
-    } else {
-        [_mainCollectionView reloadData];
     }
+    [_mainCollectionView reloadData];
+    
     
     self.mainCollectionView.frame = CGRectMake(self.mainCollectionView.frame.origin.x, self.mainCollectionView.frame.origin.y, [self calulateCollectionViewWidth], CGRectGetHeight(_mainCollectionView.bounds));
     
@@ -403,7 +403,7 @@ static NSInteger const DefaultCellWidth = 80;
     if (!_mainCollectionView) {
         UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc]init];
         layout.sectionHeadersPinToVisibleBoundsAll = !self.showAllHeight;
-        _mainCollectionView = [[UICollectionView alloc]initWithFrame:CGRectMake(0, 0, _cellAverageItem ? _mainScrollView.bounds.size.width : _mainScrollView.bounds.size.width, _mainScrollView.bounds.size.height) collectionViewLayout:layout];
+        _mainCollectionView = [[UICollectionView alloc]initWithFrame:CGRectMake(0, 0, _mainScrollView.bounds.size.width, _mainScrollView.bounds.size.height) collectionViewLayout:layout];
         _mainCollectionView.showsVerticalScrollIndicator = false;
         _mainCollectionView.showsHorizontalScrollIndicator = false;
         _mainCollectionView.delegate = self;
