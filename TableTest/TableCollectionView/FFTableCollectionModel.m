@@ -9,11 +9,11 @@
 #import "FFTableCollectionModel.h"
 
 @implementation FFTableCollectionModel
-+ (instancetype)tableCollectionModelWithContent:(NSString *)content textColor:(UIColor *)textColor font:(UIFont *)font bgColor:(UIColor *)bgColor {
-    return [[FFTableCollectionModel alloc]initWithContent:content textColor:textColor font:font bgColor:bgColor];
++ (instancetype)tableCollectionModelWithContent:(NSString *)content textColor:(UIColor *)textColor font:(UIFont *)font bgColor:(UIColor *)bgColor type:(NSString *)type select:(BOOL )select {
+    return [[FFTableCollectionModel alloc]initWithContent:content textColor:textColor font:font bgColor:bgColor type:type select:select];
 }
 
-- (instancetype)initWithContent:(NSString *)content textColor:(UIColor *)textColor font:(UIFont *)font bgColor:(UIColor *)bgColor
+- (instancetype)initWithContent:(NSString *)content textColor:(UIColor *)textColor font:(UIFont *)font bgColor:(UIColor *)bgColor type:(NSString *)type select:(BOOL )select
 {
     self = [super init];
     if (self) {
@@ -21,6 +21,8 @@
         self.textColor = textColor;
         self.font = font;
         self.bgColor = bgColor;
+        self.type = type;
+        self.select = select;
     }
     return self;
 }

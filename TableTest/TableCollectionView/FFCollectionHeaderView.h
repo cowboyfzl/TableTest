@@ -12,7 +12,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FFCollectionHeaderView : UICollectionReusableView
-@property (nonatomic, copy) void(^selectBlock)(FFMatrix matrix);
+@property (nonatomic, copy) void(^selectBlock)(FFMatrix matrix, FFTableCollectionModel *model);
 - (void)collectionHeaderViewWithTextWidth:(CGFloat )textWidht cellTextMargin:(UIEdgeInsets )cellTextMargin margin:(UIEdgeInsets )margin borderColor:(UIColor *)borderColor;
 
 - (void )showDataWithModel:(NSMutableArray<FFTableCollectionModel *> *)models sizes:(NSArray *)sizes isHover:(BOOL )isHover;

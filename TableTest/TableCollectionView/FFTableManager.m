@@ -334,11 +334,11 @@ static NSInteger const DefaultCellWidth = 80;
         }
         
         __weak typeof (self)weakSelf = self;
-        headerViwe.selectBlock = ^(FFMatrix matrix) {
-            if ([weakSelf.delegate respondsToSelector:@selector(didSelectWithCollectionViewHeader:section:matrix:)]) {
-                [weakSelf.delegate didSelectWithCollectionViewHeader:collectionView section:indexPath.section matrix:matrix];
+        headerViwe.selectBlock = ^(FFMatrix matrix, FFTableCollectionModel *model) {
+            if ([weakSelf.delegate respondsToSelector:@selector(didSelectWithCollectionViewHeader:section:matrix:model:)]) {
+                [weakSelf.delegate didSelectWithCollectionViewHeader:collectionView section:indexPath.section matrix:matrix model:model];
             }
-            weakSelf.selectHeaderBlock(collectionView, matrix, indexPath.section);
+            weakSelf.selectHeaderBlock(collectionView, matrix, indexPath.section, model);
         };
         return headerViwe;
     }
@@ -389,13 +389,13 @@ static NSInteger const DefaultCellWidth = 80;
     NSInteger row = ceil(indexPath.row / sourceColumn);
     NSInteger column = indexPath.row % [self.dataSource ffTableManagerColumnSection:indexPath.section];
     FFMatrix matrix = MatrixMake(row, column);
-    
-    if ([self.delegate respondsToSelector:@selector(didSelectWithCollectionView:section:matrix:)]) {
-        [self.delegate didSelectWithCollectionView:collectionView section:indexPath.section matrix:matrix];
+    FFTableCollectionModel *model = [self.dataSource ffTableManagerSetData:self matrix:matrix];
+    if ([self.delegate respondsToSelector:@selector(didSelectWithCollectionView:section:matrix:model:)]) {
+        [self.delegate didSelectWithCollectionView:collectionView section:indexPath.section matrix:matrix model:model];
     }
     
     if (self.selectBlock) {
-        self.selectBlock(collectionView, matrix, indexPath.section);
+        self.selectBlock(collectionView, matrix, indexPath.section, model);
     }
 }
 

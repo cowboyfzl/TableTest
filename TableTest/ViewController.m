@@ -28,9 +28,19 @@ static NSInteger const Row = 50;
     manager.averageItem(false).isShowAll(false);
     [manager reloadData];
     _manager = manager;
-    [[manager didSelectWithBlock:^(UICollectionView *collectionView, FFMatrix matrix, NSInteger section) {
-        NSLog(@"%lu....%lu!!!!%lu",matrix.column, matrix.row, section);
-    }] didSelectHeaderWithBlock:^(UICollectionView *collectionView, FFMatrix matrix, NSInteger section) {
+    [[manager didSelectWithBlock:^(UICollectionView *collectionView, FFMatrix matrix, NSInteger section, FFTableCollectionModel *model) {
+        if (matrix.column == 0 && [model.type  isEqual: @"aaa"]) {
+            if (model.isSelect) {
+                [self.datas removeObjectsInRange:NSMakeRange(matrix.row + 1, [self addData:matrix.row + 1].count)];
+            } else {
+                NSArray *a = [self addData:matrix.row + 1];
+                [self.datas insertObjects:a atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(matrix.row + 1, a.count)]];
+            }
+            model.select = !model.isSelect;
+            NSInteger index = matrix.row * Column;
+            [collectionView reloadData];
+        }
+    }] didSelectHeaderWithBlock:^(UICollectionView *collectionView, FFMatrix matrix, NSInteger section, FFTableCollectionModel *model) {
         NSLog(@"%lu....%lu!!!!%lu",matrix.column, matrix.row, section);
     }];
 }
@@ -40,7 +50,7 @@ static NSInteger const Row = 50;
 }
 
 - (NSInteger)ffTableManagerRowWithNumberSection:(NSInteger)section {
-    return Row;
+    return self.datas.count;
 }
 
 - (CGFloat )ffTableManagerItemWidthWithColumn:(NSInteger )column Section:(NSInteger )section margin:(UIEdgeInsets )margin {
@@ -80,11 +90,28 @@ static NSInteger const Row = 50;
     return self.headeraaa;
 }
 
+- (NSMutableArray *)addData:(NSInteger )row {
+    NSMutableArray *arraa = [NSMutableArray array];
+    for (NSInteger i = 0; i < 7; i++) {
+        NSMutableArray *arr = [NSMutableArray array];
+        for (NSInteger j = 0; j < Column; j++) {
+            UIColor *color = [UIColor blueColor];
+            UIColor *bgColor = [UIColor whiteColor];
+            NSString *aaa = [NSString stringWithFormat:@"%@%ld", @"添加的数据", (long)row];
+            FFTableCollectionModel *model = [FFTableCollectionModel tableCollectionModelWithContent:aaa textColor:color font:[UIFont systemFontOfSize:14] bgColor:bgColor type:@"" select:false];
+            [arr addObject:model];
+        }
+        [arraa addObject:arr];
+    }
+   
+    return arraa;
+}
+
 - (NSMutableArray *)headeraaa {
     if (!_headeraaa) {
         _headeraaa = [NSMutableArray array];
-        for (NSString *aaa in @[@"姓名", @"部门", @"目标拜访", @"实际完成", @"最后一次跟进尿失禁", @"完成率"]) {
-            FFTableCollectionModel *model = [FFTableCollectionModel tableCollectionModelWithContent:aaa textColor:[UIColor blackColor] font:[UIFont systemFontOfSize:14] bgColor:[UIColor whiteColor]];
+        for (NSString *aaa in @[@"姓名", @"部门", @"目标拜访", @"实际完成", @"最后一次跟进", @"完成率"]) {
+            FFTableCollectionModel *model = [FFTableCollectionModel tableCollectionModelWithContent:aaa textColor:[UIColor blackColor] font:[UIFont systemFontOfSize:14] bgColor:[UIColor whiteColor] type:@"" select:false];
             [_headeraaa addObject:model];
         }
     }
@@ -106,7 +133,7 @@ static NSInteger const Row = 50;
                     color = [UIColor greenColor];
                     bgColor=  [UIColor redColor];
                 }
-                FFTableCollectionModel *model = [FFTableCollectionModel tableCollectionModelWithContent:aaa textColor:color font:[UIFont systemFontOfSize:14] bgColor:bgColor];
+                FFTableCollectionModel *model = [FFTableCollectionModel tableCollectionModelWithContent:aaa textColor:color font:[UIFont systemFontOfSize:14] bgColor:bgColor type:@"aaa" select:false];
                 [arr addObject:model];
             }
             [_datas addObject:arr];
