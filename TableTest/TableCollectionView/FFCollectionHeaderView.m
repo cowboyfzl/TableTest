@@ -63,7 +63,7 @@
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     FFMatrix matrix = MatrixMake(0, indexPath.row % _datas.count);
     if (self.selectBlock) {
-        self.selectBlock(matrix, _datas[indexPath.row]);
+        self.selectBlock(matrix);
     }
 }
 

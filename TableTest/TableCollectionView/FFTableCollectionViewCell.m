@@ -18,6 +18,7 @@ typedef NS_ENUM(NSInteger, ScreenType) {
 @property (nonatomic, strong) CAShapeLayer *borderLayer;
 @end
 static NSInteger const FFBorderWidth = 1;
+static CGFloat const LineOffst = 0.2;
 @implementation FFTableCollectionViewCell
 
 - (void)awakeFromNib {
@@ -46,16 +47,16 @@ static NSInteger const FFBorderWidth = 1;
     
     if (self.ishaveHeader) {
         if (_currentMatrix.row == 0 && _currentMatrix.column == 0) {
-            [path moveToPoint:CGPointMake(0, size.height)];
-            [path addLineToPoint:CGPointMake(0, 0)];
+            [path moveToPoint:CGPointMake(LineOffst, size.height - (LineOffst * 2))];
+            [path addLineToPoint:CGPointMake(LineOffst, LineOffst)];
             
-            [path moveToPoint:CGPointMake(size.width, 0)];
-            [path addLineToPoint:CGPointMake(size.width, size.height)];
+            [path moveToPoint:CGPointMake(size.width - (LineOffst * 2), LineOffst)];
+            [path addLineToPoint:CGPointMake(size.width - (LineOffst * 2), size.height - (LineOffst * 2))];
         }
         
         if (_currentMatrix.row == 0 && _currentMatrix.column > 0) {
-            [path moveToPoint:CGPointMake(size.width, 0)];
-            [path addLineToPoint:CGPointMake(size.width, size.height)];
+            [path moveToPoint:CGPointMake(size.width - (LineOffst * 2), LineOffst)];
+            [path addLineToPoint:CGPointMake(size.width - (LineOffst * 2), size.height - (LineOffst * 2))];
         }
         
         if (_currentMatrix.row > 0) {
@@ -71,20 +72,20 @@ static NSInteger const FFBorderWidth = 1;
 
 - (void )drawPath:(UIBezierPath *)path size:(CGSize )size {
     if (_currentMatrix.column == 0) {
-        [path moveToPoint:CGPointMake(0, size.height)];
-        [path addLineToPoint:CGPointMake(0, 0)];
-        [path addLineToPoint:CGPointMake(size.width, 0)];
-        [path addLineToPoint:CGPointMake(size.width, size.height)];
+        [path moveToPoint:CGPointMake(LineOffst, size.height - (LineOffst * 2))];
+        [path addLineToPoint:CGPointMake(LineOffst, LineOffst)];
+        [path addLineToPoint:CGPointMake(size.width - (LineOffst * 2), LineOffst)];
+        [path addLineToPoint:CGPointMake(size.width - (LineOffst * 2), size.height - LineOffst)];
     }
     
     if (_currentMatrix.column > 0) {
-        [path moveToPoint:CGPointMake(0, 0)];
-        [path addLineToPoint:CGPointMake(size.width, 0)];
-        [path addLineToPoint:CGPointMake(size.width, size.height)];
+        [path moveToPoint:CGPointMake(LineOffst, LineOffst)];
+        [path addLineToPoint:CGPointMake(size.width - (LineOffst * 2), LineOffst)];
+        [path addLineToPoint:CGPointMake(size.width - (LineOffst * 2), size.height - (LineOffst * 2))];
     }
     
     if (_currentMatrix.row == _maxMatrix.row ) {
-        [path addLineToPoint:CGPointMake(0,size.height)];
+        [path addLineToPoint:CGPointMake(LineOffst , size.height - (LineOffst * 2))];
     }
 }
 

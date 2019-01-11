@@ -125,7 +125,6 @@ static NSInteger const DefaultCellWidth = 80;
     }
     [_mainCollectionView reloadData];
     
-    
     self.mainCollectionView.frame = CGRectMake(self.mainCollectionView.frame.origin.x, self.mainCollectionView.frame.origin.y, [self calulateCollectionViewWidth], CGRectGetHeight(_mainCollectionView.bounds));
     
     if (_showAllHeight) {
@@ -138,11 +137,11 @@ static NSInteger const DefaultCellWidth = 80;
 }
 
 - (CGFloat)calulateCollectionViewWidth {
-    CGFloat itemWidth = 0;
+    double itemWidth = 0;
     for (NSInteger i = 0; i < _section; i++ ) {
-        CGFloat sectionWidth = 0;
+        double sectionWidth = 0;
         for (NSNumber *width in _cellWidthsArr[i]) {
-            sectionWidth += [width floatValue];
+            sectionWidth += [width doubleValue];
         }
         
         if ([self.delegate respondsToSelector:@selector(ffTableManagerRegistClassWithSection:)] && [self.delegate respondsToSelector:@selector(ffTableManagerSetCollectionHeaderView:section:)]) {
@@ -160,6 +159,9 @@ static NSInteger const DefaultCellWidth = 80;
     
     itemWidth += _margin.left + _margin.right;
     _mainScrollView.contentSize = CGSizeMake(itemWidth, 0);
+    if (!itemWidth) {
+        itemWidth = _mainScrollView.bounds.size.width;
+    }
     return itemWidth;
 }
 
@@ -199,13 +201,13 @@ static NSInteger const DefaultCellWidth = 80;
             if (!_cellAverageItem) {
                 if ([self.dataSource respondsToSelector:@selector(ffTableManagerItemWidthWithColumn:Section:margin:)]) {
                     CGFloat itemWidth = [self.dataSource ffTableManagerItemWidthWithColumn:j Section:i margin:_margin];
-                    [itemWidths addObject:@(itemWidth)];
+                    [itemWidths addObject:@([self roundFloat:itemWidth])];
                 } else {
                     [itemWidths addObject:@(DefaultCellWidth)];
                 }
             } else {
                 CGFloat itemWidth = (width - itemOffset) / [self.dataSource ffTableManagerColumnSection:i];
-                [itemWidths addObject:@(itemWidth)];
+                [itemWidths addObject:@([self roundFloat:itemWidth])];
             }
         }
         [_cellWidthsArr addObject:itemWidths];
@@ -334,11 +336,14 @@ static NSInteger const DefaultCellWidth = 80;
         }
         
         __weak typeof (self)weakSelf = self;
-        headerViwe.selectBlock = ^(FFMatrix matrix, FFTableCollectionModel *model) {
-            if ([weakSelf.delegate respondsToSelector:@selector(didSelectWithCollectionViewHeader:section:matrix:model:)]) {
-                [weakSelf.delegate didSelectWithCollectionViewHeader:collectionView section:indexPath.section matrix:matrix model:model];
+        headerViwe.selectBlock = ^(FFMatrix matrix) {
+            if ([weakSelf.delegate respondsToSelector:@selector(didSelectWithCollectionViewHeader:section:matrix:)]) {
+                [weakSelf.delegate didSelectWithCollectionViewHeader:collectionView section:indexPath.section matrix:matrix];
             }
-            weakSelf.selectHeaderBlock(collectionView, matrix, indexPath.section, model);
+            if (weakSelf.selectHeaderBlock) {
+                weakSelf.selectHeaderBlock(collectionView, matrix, indexPath.section);
+            }
+            
         };
         return headerViwe;
     }
@@ -389,13 +394,13 @@ static NSInteger const DefaultCellWidth = 80;
     NSInteger row = ceil(indexPath.row / sourceColumn);
     NSInteger column = indexPath.row % [self.dataSource ffTableManagerColumnSection:indexPath.section];
     FFMatrix matrix = MatrixMake(row, column);
-    FFTableCollectionModel *model = [self.dataSource ffTableManagerSetData:self matrix:matrix];
-    if ([self.delegate respondsToSelector:@selector(didSelectWithCollectionView:section:matrix:model:)]) {
-        [self.delegate didSelectWithCollectionView:collectionView section:indexPath.section matrix:matrix model:model];
+    
+    if ([self.delegate respondsToSelector:@selector(didSelectWithCollectionView:section:matrix:)]) {
+        [self.delegate didSelectWithCollectionView:collectionView section:indexPath.section matrix:matrix];
     }
     
     if (self.selectBlock) {
-        self.selectBlock(collectionView, matrix, indexPath.section, model);
+        self.selectBlock(collectionView, matrix, indexPath.section);
     }
 }
 
@@ -462,6 +467,11 @@ static NSInteger const DefaultCellWidth = 80;
     return _maxMatrixs;
 }
 
+-(float)roundFloat:(float)price{
+    
+    return (floorf(price * 100 + 0.5)) / 100;
+    
+}
 @end
 
 

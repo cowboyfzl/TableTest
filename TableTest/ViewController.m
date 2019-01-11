@@ -28,21 +28,12 @@ static NSInteger const Row = 50;
     manager.averageItem(false).isShowAll(false);
     [manager reloadData];
     _manager = manager;
-    [[manager didSelectWithBlock:^(UICollectionView *collectionView, FFMatrix matrix, NSInteger section, FFTableCollectionModel *model) {
-        if (matrix.column == 0 && [model.type  isEqual: @"aaa"]) {
-            if (model.isSelect) {
-                [self.datas removeObjectsInRange:NSMakeRange(matrix.row + 1, [self addData:matrix.row + 1].count)];
-            } else {
-                NSArray *a = [self addData:matrix.row + 1];
-                [self.datas insertObjects:a atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(matrix.row + 1, a.count)]];
-            }
-            model.select = !model.isSelect;
-            NSInteger index = matrix.row * Column;
-            [collectionView reloadData];
-        }
-    }] didSelectHeaderWithBlock:^(UICollectionView *collectionView, FFMatrix matrix, NSInteger section, FFTableCollectionModel *model) {
-        NSLog(@"%lu....%lu!!!!%lu",matrix.column, matrix.row, section);
+    [[manager didSelectWithBlock:^(UICollectionView * _Nonnull collectionView, FFMatrix matrix, NSInteger section) {
+        
+    }] didSelectHeaderWithBlock:^(UICollectionView * _Nonnull collectionView, FFMatrix matrix, NSInteger section) {
+        
     }];
+   
 }
 
 - (NSInteger)ffTableManagerColumnSection:(NSInteger)section {
