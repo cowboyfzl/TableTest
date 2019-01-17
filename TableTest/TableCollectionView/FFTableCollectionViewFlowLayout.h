@@ -7,11 +7,18 @@
 //
 
 #import <UIKit/UIKit.h>
-
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSInteger, CollectionViewCellPosition) {
+    CollectionViewCellPositionLeft = 0,
+    CollectionViewCellPositionCenter,
+    CollectionViewCellPositionRight,
+};
 @interface FFTableCollectionViewFlowLayout : UICollectionViewFlowLayout
-
+@property (nonatomic, assign) CollectionViewCellPosition collectionViewCellPosition;
+@property (nonatomic, assign) UIEdgeInsets edgeInsets;
+@property (nonatomic, strong) NSMutableArray *columns;
+@property (nonatomic, strong) NSMutableArray *headerHeights;
 @end
 
 NS_ASSUME_NONNULL_END
