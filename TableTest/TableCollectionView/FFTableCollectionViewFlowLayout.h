@@ -19,6 +19,9 @@ typedef NS_ENUM(NSInteger, CollectionViewCellPosition) {
 @property (nonatomic, assign) UIEdgeInsets edgeInsets;
 @property (nonatomic, strong) NSMutableArray *columns;
 @property (nonatomic, strong) NSMutableArray *headerHeights;
+@property (nonatomic, assign) CGFloat contentHeight;
+@property (nonatomic, strong) NSArray *sectionWidths;
+@property (nonatomic, assign) BOOL isCustomHeader;
 @end
 
 NS_ASSUME_NONNULL_END

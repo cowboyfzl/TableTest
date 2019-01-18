@@ -8,9 +8,9 @@
 
 #import <UIKit/UIKit.h>
 #import "FFTableCollectionModel.h"
+#import "FFTableCollectionViewFlowLayout.h"
 NS_ASSUME_NONNULL_BEGIN
 @class FFTableManager;
-
 /**
  矩阵，代表当前是第几排第几列
  */
@@ -201,6 +201,18 @@ typedef void(^FFSelectBlock)(UICollectionView *collectionView, FFMatrix matrix, 
  如果设置成true当前视图的高度为所有列表高度加上头视图的总合
  */
 - (FFTableManager *(^)(BOOL showAll))isShowAll;
+
+/**
+ 是否让header悬停
+ */
+- (FFTableManager *(^)(BOOL showAll))isHoverHeader;
+
+/**
+ 设置cell布局位置
+ 默认 CollectionViewCellPositionCenter
+ 在多组的情况下如果数据列（column）不一致该如何布局的设置；在宽度为平分的情况下无效
+ */
+- (FFTableManager *(^)(CollectionViewCellPosition position))cellPosition;
 
 /**
  默认grayColor

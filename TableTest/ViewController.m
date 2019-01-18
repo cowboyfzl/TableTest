@@ -18,7 +18,7 @@
 @property (nonatomic, strong) FFTableManager *manager;
 @end
 static NSInteger const Column = 6;
-static NSInteger const Row = 50;
+static NSInteger const Row = 30;
 @implementation ViewController
 
 - (void)viewDidLoad {
@@ -27,7 +27,7 @@ static NSInteger const Row = 50;
     FFTableManager *manager = [FFTableManager shareFFTableManagerWithFrame:CGRectMake(0, 0, self.scrollView.bounds.size.width, self.scrollView.bounds.size.height - 20) sView:self.scrollView];
     manager.delegate = self;
     manager.dataSource = self;
-    manager.averageItem(false).isShowAll(false);
+    manager.averageItem(true).isShowAll(false);
     [manager reloadData];
     _manager = manager;
     [[manager didSelectWithBlock:^(UICollectionView * _Nonnull collectionView, FFMatrix matrix, NSInteger section) {
@@ -69,18 +69,18 @@ static NSInteger const Row = 50;
     return 0;
 }
 
-- (NSArray *)ffTableManager:(FFTableManager *)FFTableManager itemWidtWeightCoefficienthWithSection:(NSInteger)section {
-    switch (section) {
-        case 0:
-            return @[@1.5,@1.5,@1,@1,@1,@1];
-            break;
-            
-        case 1:
-            return @[@1.5,@1.5,@1,@1,@1];
-            break;
-    }
-    return nil;
-}
+//- (NSArray *)ffTableManager:(FFTableManager *)FFTableManager itemWidtWeightCoefficienthWithSection:(NSInteger)section {
+//    switch (section) {
+//        case 0:
+//            return @[@1.5,@1.5,@1,@1,@1,@1];
+//            break;
+//            
+//        case 1:
+//            return @[@1.5,@1.5,@1,@1,@1];
+//            break;
+//    }
+//    return nil;
+//}
 
 //- (CGFloat )ffTableManagerItemWidthWithColumn:(NSInteger )column Section:(NSInteger )section margin:(UIEdgeInsets )margin {
 //    CGFloat w = self.view.bounds.size.width - margin.left - margin.right;
@@ -102,9 +102,14 @@ static NSInteger const Row = 50;
 //- (Class)ffTableManager:(FFTableManager *)FFTableManager registClassWithSection:(NSInteger)section {
 //    return [HeaderCollectionReusableView class];
 //}
+//
+//- (CGFloat )ffTableManager:(FFTableManager *)FFTableManager headerHeightWithSction:(NSInteger )section {
+//    return 100;
+//}
 
 - (void )ffTableManager:(FFTableManager *)FFTableManager setCollectionHeaderView:(UICollectionReusableView *)ffTableCollectionView section:(NSInteger)section {
-    
+    HeaderCollectionReusableView *view = (HeaderCollectionReusableView *)ffTableCollectionView;
+    view.label.text = @"挨家挨户就开始";
 }
 
 - (nonnull FFTableCollectionModel *)ffTableManagerSetData:(nonnull FFTableManager *)FFTableManager section:(NSInteger )section matrix:(FFMatrix)matrix {

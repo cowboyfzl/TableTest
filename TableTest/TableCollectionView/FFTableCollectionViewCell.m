@@ -61,6 +61,10 @@ static CGFloat const LineOffst = 0.2;
         
         if (_currentMatrix.row > 0) {
             [self drawPath:path size:size];
+        } else {
+            if (_currentMatrix.row == _maxMatrix.row ) {
+                [path addLineToPoint:CGPointMake(LineOffst , size.height - (LineOffst * 2))];
+            }
         }
         
     } else {

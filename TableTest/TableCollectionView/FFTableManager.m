@@ -28,6 +28,8 @@
 @property (nonatomic, assign) NSInteger section;
 @property (nonatomic, strong) NSMutableArray *headerCellSizes;
 @property (nonatomic, assign) BOOL showAllHeight;
+@property (nonatomic, assign) BOOL hoverHeader;
+@property (nonatomic, assign) CollectionViewCellPosition cellLayoutMode;
 @end
 static NSInteger const DefaultCellWidth = 80;
 @implementation FFTableManager
@@ -44,6 +46,8 @@ static NSInteger const DefaultCellWidth = 80;
     manager.cellBorderColor = [UIColor grayColor];
     manager.section = 1;
     manager.showAllHeight = false;
+    manager.hoverHeader = true;
+    manager.cellLayoutMode = CollectionViewCellPositionCenter;
     return manager;
 }
 
@@ -108,9 +112,23 @@ static NSInteger const DefaultCellWidth = 80;
     };
 }
 
+- (FFTableManager *(^)(BOOL showAll))isHoverHeader {
+    return ^FFTableManager *(BOOL isHoverHeader) {
+        self.hoverHeader = isHoverHeader;
+        return self;
+    };
+}
+
 - (instancetype)didSelectHeaderWithBlock:(FFSelectBlock)block {
     _selectHeaderBlock = block;
     return self;
+}
+
+- (FFTableManager *(^)(CollectionViewCellPosition position))cellPosition {
+    return ^FFTableManager *(CollectionViewCellPosition position) {
+        self.cellLayoutMode = position;
+        return self;
+    };
 }
 
 - (void)reloadData {
@@ -180,8 +198,8 @@ static NSInteger const DefaultCellWidth = 80;
             CGFloat rowHeight = [self calculateRowMaxHeightWithSection:i row:j + 1];
             maxHeight += rowHeight;
         }
-        
-        maxHeight += headerHeight + _margin.top + _margin.bottom;
+        CGFloat bottomMargin = [self.delegate respondsToSelector:@selector(ffTableManager:registClassWithSection:)] ? 0 : _margin.bottom;
+        maxHeight += headerHeight + _margin.top + bottomMargin;
     }
     
     if (_showAllHeight) {
@@ -380,8 +398,8 @@ static NSInteger const DefaultCellWidth = 80;
             if (weakSelf.selectHeaderBlock) {
                 weakSelf.selectHeaderBlock(collectionView, matrix, indexPath.section);
             }
-            
         };
+        
         return headerViwe;
     }
     return nil;
@@ -444,9 +462,10 @@ static NSInteger const DefaultCellWidth = 80;
 - (UICollectionView *)mainCollectionView {
     if (!_mainCollectionView) {
         FFTableCollectionViewFlowLayout *layout = [[FFTableCollectionViewFlowLayout alloc]init];
-        layout.collectionViewCellPosition = CollectionViewCellPositionLeft;
+        layout.collectionViewCellPosition = _cellLayoutMode;;
         NSMutableArray *columns = [NSMutableArray array];
         NSMutableArray *headerHeights = [NSMutableArray array];
+        NSMutableArray *sectionWidths = [NSMutableArray array];
         for (NSInteger i = 0; i < _section; i++) {
             if ([self.delegate respondsToSelector:@selector(ffTableManager:headerHeightWithSction:)]) {
                 CGFloat height = [self.delegate ffTableManager:self headerHeightWithSction:i];
@@ -458,12 +477,24 @@ static NSInteger const DefaultCellWidth = 80;
             }
             NSInteger column = [self.dataSource ffTableManager:self columnSection:i];
             [columns addObject:@(column)];
+            
+            NSArray *widths = _cellWidthsArr[i];
+            CGFloat sectionWidth = 0;
+            for (NSNumber *width in widths) {
+                sectionWidth += [width floatValue];
+            }
+            [sectionWidths addObject:@(sectionWidth)];
         }
-        
+        layout.sectionWidths = sectionWidths;
         layout.columns = columns;
         layout.headerHeights = headerHeights;
         layout.edgeInsets = self.margin;
-        layout.sectionHeadersPinToVisibleBoundsAll = !self.showAllHeight;
+        layout.sectionHeadersPinToVisibleBoundsAll = _hoverHeader;
+        layout.isCustomHeader = [self.delegate respondsToSelector:@selector(ffTableManager:registClassWithSection:)];
+        if (!_showAllHeight) {
+            layout.contentHeight = [self getTableHeight];
+        }
+        
         _mainCollectionView = [[UICollectionView alloc]initWithFrame:CGRectMake(0, 0, _mainScrollView.bounds.size.width, _mainScrollView.bounds.size.height) collectionViewLayout:layout];
         _mainCollectionView.showsVerticalScrollIndicator = false;
         _mainCollectionView.showsHorizontalScrollIndicator = false;

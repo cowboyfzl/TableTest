@@ -16,16 +16,22 @@
             <rect key="frame" x="0.0" y="0.0" width="375" height="125"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <subviews>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Izw-82-3hV">
-                    <rect key="frame" x="48" y="45" width="42" height="21"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Izw-82-3hV">
+                    <rect key="frame" x="15" y="52" width="42" height="21"/>
                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                 </label>
             </subviews>
             <color key="backgroundColor" red="0.94509803920000002" green="0.61960784310000006" blue="0.76078431369999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstItem="Izw-82-3hV" firstAttribute="leading" secondItem="4vZ-bR-usS" secondAttribute="leading" constant="15" id="8bB-SF-IcB"/>
+                <constraint firstItem="Izw-82-3hV" firstAttribute="centerY" secondItem="MFO-RO-IOs" secondAttribute="centerY" id="bP6-v8-RYh"/>
+            </constraints>
             <viewLayoutGuide key="safeArea" id="4vZ-bR-usS"/>
+            <connections>
+                <outlet property="label" destination="Izw-82-3hV" id="FKQ-lS-Inf"/>
+            </connections>
             <point key="canvasLocation" x="-79.200000000000003" y="65.217391304347828"/>
         </collectionReusableView>
     </objects>
