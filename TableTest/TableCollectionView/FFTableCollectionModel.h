@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) UIColor *textColor;
 @property (nonatomic, strong) UIColor *bgColor;
 @property (nonatomic, strong) UIFont *font;
-+ (instancetype)tableCollectionModelWithContent:(NSString *)content textColor:(UIColor *)textColor font:(UIFont *)font bgColor:(UIColor *)bgColor type:(NSString *)type select:(BOOL )select;
++ (instancetype)tableCollectionModelWithContent:(NSString *)content textColor:(UIColor *)textColor font:(UIFont *)font bgColor:(UIColor *)bgColor type:(NSString * _Nullable)type select:(BOOL )select;
 @end
 
 NS_ASSUME_NONNULL_END

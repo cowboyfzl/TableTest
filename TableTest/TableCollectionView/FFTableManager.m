@@ -29,7 +29,6 @@
 @property (nonatomic, strong) NSMutableArray *headerCellSizes;
 @property (nonatomic, assign) BOOL showAllHeight;
 @property (nonatomic, assign) BOOL hoverHeader;
-@property (nonatomic, assign) CollectionViewCellPosition cellLayoutMode;
 @end
 static NSInteger const DefaultCellWidth = 80;
 @implementation FFTableManager
@@ -47,7 +46,6 @@ static NSInteger const DefaultCellWidth = 80;
     manager.section = 1;
     manager.showAllHeight = false;
     manager.hoverHeader = true;
-    manager.cellLayoutMode = CollectionViewCellPositionCenter;
     return manager;
 }
 
@@ -124,13 +122,6 @@ static NSInteger const DefaultCellWidth = 80;
     return self;
 }
 
-- (FFTableManager *(^)(CollectionViewCellPosition position))cellPosition {
-    return ^FFTableManager *(CollectionViewCellPosition position) {
-        self.cellLayoutMode = position;
-        return self;
-    };
-}
-
 - (void)reloadData {
     if ([self.dataSource respondsToSelector:@selector(ffTableManagerNumberOfSection:)]) {
         _section = [self.dataSource ffTableManagerNumberOfSection:self];
@@ -139,8 +130,10 @@ static NSInteger const DefaultCellWidth = 80;
     [self calulateMaxWidthAndHeaderHeight];
     if (!_mainCollectionView.superview) {
         [_superV addSubview:_mainScrollView];
+        _mainCollectionView.collectionViewLayout = [self getFlowlayout];
         [_mainScrollView addSubview:self.mainCollectionView];
     }
+    
     [_mainCollectionView reloadData];
     
     self.mainCollectionView.frame = CGRectMake(self.mainCollectionView.frame.origin.x, self.mainCollectionView.frame.origin.y, [self calulateCollectionViewWidth], CGRectGetHeight(_mainCollectionView.bounds));
@@ -352,12 +345,12 @@ static NSInteger const DefaultCellWidth = 80;
 }
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
-    
+
     if ([self.delegate respondsToSelector:@selector(ffTableManager:headerHeightWithSction:)]) {
         CGFloat height = [self.delegate ffTableManager:self headerHeightWithSction:section];
         return CGSizeMake(collectionView.bounds.size.width, height);
     }
-    
+
     if (_headerCellSizes.count) {
         CGSize size = [_headerCellSizes[section][0]CGSizeValue];
         size.height += _margin.top;
@@ -398,6 +391,7 @@ static NSInteger const DefaultCellWidth = 80;
             if (weakSelf.selectHeaderBlock) {
                 weakSelf.selectHeaderBlock(collectionView, matrix, indexPath.section);
             }
+            
         };
         
         return headerViwe;
@@ -439,7 +433,7 @@ static NSInteger const DefaultCellWidth = 80;
     [_maxMatrixs[indexPath.section]getValue:&maxMatrix];
     cell.maxMatrix = maxMatrix;
     cell.haveHeader = [self.dataSource respondsToSelector:@selector(ffTableManagerHeaderViewSetData:section:)];
-    NSString *key = [NSString stringWithFormat:@"%ld-%ld", indexPath.section, row + 1];
+    NSString *key = [NSString stringWithFormat:@"%ld-%ld", (long)indexPath.section, (long)row + 1];
     [cell showDataWithModel:model borderColor:_cellBorderColor edge:_cellTextMargin size:CGSizeMake([_cellWidthsArr[indexPath.section][column]floatValue], [_cacheRowHeight[key] floatValue])];
     return cell;
 }
@@ -459,42 +453,34 @@ static NSInteger const DefaultCellWidth = 80;
     }
 }
 
+- (UICollectionViewFlowLayout *)getFlowlayout {
+    FFTableCollectionViewFlowLayout *layout = [[FFTableCollectionViewFlowLayout alloc]init];
+    layout.collectionViewCellPosition = CollectionViewCellPositionRight;
+    layout.contentHeight = [self getTableHeight];
+    NSMutableArray *columns = [NSMutableArray array];
+    NSMutableArray *sectionWidths = [NSMutableArray array];
+    for (NSInteger i = 0; i < _section; i++) {
+        NSInteger column = [self.dataSource ffTableManager:self columnSection:i];
+        [columns addObject:@(column)];
+        NSArray *widths = _cellWidthsArr[i];
+        CGFloat sectionWidth = 0;
+        for (NSNumber *width in widths) {
+            sectionWidth += [width floatValue];
+        }
+        [sectionWidths addObject:@(sectionWidth)];
+    }
+    layout.sectionWidths = sectionWidths;
+    layout.columns = columns;
+    layout.edgeInsets = self.margin;
+    layout.sectionHeadersPinToVisibleBoundsAll = _hoverHeader;
+    layout.isCustomHeader = [self.delegate respondsToSelector:@selector(ffTableManager:registClassWithSection:)];
+    return layout;
+}
+
 - (UICollectionView *)mainCollectionView {
     if (!_mainCollectionView) {
-        FFTableCollectionViewFlowLayout *layout = [[FFTableCollectionViewFlowLayout alloc]init];
-        layout.collectionViewCellPosition = _cellLayoutMode;;
-        NSMutableArray *columns = [NSMutableArray array];
-        NSMutableArray *headerHeights = [NSMutableArray array];
-        NSMutableArray *sectionWidths = [NSMutableArray array];
-        for (NSInteger i = 0; i < _section; i++) {
-            if ([self.delegate respondsToSelector:@selector(ffTableManager:headerHeightWithSction:)]) {
-                CGFloat height = [self.delegate ffTableManager:self headerHeightWithSction:i];
-                [headerHeights addObject:@(height)];
-            } else {
-                NSArray *sizes = _headerCellSizes[i];
-                CGFloat height = [sizes.firstObject CGSizeValue].height;
-                [headerHeights addObject:@(height)];
-            }
-            NSInteger column = [self.dataSource ffTableManager:self columnSection:i];
-            [columns addObject:@(column)];
-            
-            NSArray *widths = _cellWidthsArr[i];
-            CGFloat sectionWidth = 0;
-            for (NSNumber *width in widths) {
-                sectionWidth += [width floatValue];
-            }
-            [sectionWidths addObject:@(sectionWidth)];
-        }
-        layout.sectionWidths = sectionWidths;
-        layout.columns = columns;
-        layout.headerHeights = headerHeights;
-        layout.edgeInsets = self.margin;
-        layout.sectionHeadersPinToVisibleBoundsAll = _hoverHeader;
-        layout.isCustomHeader = [self.delegate respondsToSelector:@selector(ffTableManager:registClassWithSection:)];
-        if (!_showAllHeight) {
-            layout.contentHeight = [self getTableHeight];
-        }
-        
+        UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc]init];
+        layout.sectionHeadersPinToVisibleBoundsAll = !self.showAllHeight;
         _mainCollectionView = [[UICollectionView alloc]initWithFrame:CGRectMake(0, 0, _mainScrollView.bounds.size.width, _mainScrollView.bounds.size.height) collectionViewLayout:layout];
         _mainCollectionView.showsVerticalScrollIndicator = false;
         _mainCollectionView.showsHorizontalScrollIndicator = false;
