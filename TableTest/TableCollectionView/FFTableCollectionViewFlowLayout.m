@@ -39,6 +39,7 @@
         }
     }
     [_attrsArr addObjectsFromArray:headerArr];
+    
 }
 
 - (NSArray<UICollectionViewLayoutAttributes *> *)layoutAttributesForElementsInRect:(CGRect)rect {
@@ -52,9 +53,14 @@
     return true;
 }
 
-//- (CGSize)collectionViewContentSize {
-//    return CGSizeMake(self.collectionView.bounds.size.width, _contentHeight);
-//}
+- (CGSize)collectionViewContentSize {
+    if (_contentHeight) {
+        return CGSizeMake(self.collectionView.bounds.size.width, _contentHeight);
+    } else {
+        return [super collectionViewContentSize];
+    }
+    
+}
 
 - (NSMutableArray *)attrsArr {
     if (!_attrsArr) {
@@ -89,10 +95,8 @@
         _allWidth = 0;
     }
 
-    CGFloat edgeinsetTop = _isCustomHeader ? 0 :_edgeInsets.top;
-    NSInteger section = _isCustomHeader ? indexPath.section : indexPath.section + 1;
     CGFloat sectionWidth = [_sectionWidths[indexPath.section] floatValue];
-    CGFloat yPosition = _allHeight + _headerOffset + (oldAttre.indexPath.section ? ((_edgeInsets.bottom * section) + edgeinsetTop) : edgeinsetTop);
+    CGFloat yPosition = _allHeight + _headerOffset + _edgeInsets.bottom * indexPath.section;
     switch (self.collectionViewCellPosition) {
         case CollectionViewCellPositionLeft:
             oldAttre.frame = CGRectMake(_allWidth + _edgeInsets.left, yPosition, width, height);

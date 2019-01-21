@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "FFTableCollectionModel.h"
+#import "FFTableCollectionViewFlowLayout.h"
 NS_ASSUME_NONNULL_BEGIN
 @class FFTableManager;
 
@@ -230,12 +231,18 @@ typedef void(^FFSelectBlock)(UICollectionView *collectionView, FFMatrix matrix, 
  设置表格相对CollectionView的边距
  */
 - (FFTableManager *(^)(UIEdgeInsets edge))setTableMargin;
+
 /**
  默认为 (5, 5, 5, 5)
  设置表格每个cell 文本框相对边缘的的边距
  */
 - (FFTableManager *(^)(UIEdgeInsets edge))setTableCellTextMargin;
 
+/**
+ 默认为 CollectionViewCellPositionLeft 居左
+ 设置可左右滑动表格在多组数据不同列的情况下布局方式
+ */
+- (FFTableManager *(^)(CollectionViewCellPosition position))collectionViewCellPosition;
 /**
  点击cell回调
 

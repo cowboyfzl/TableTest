@@ -12,20 +12,20 @@
 @interface FFCollectionHeaderView ()<UICollectionViewDelegate, UICollectionViewDataSource>
 @property (strong, nonatomic) UICollectionView *headerCollecionView;
 @property (nonatomic, strong) NSMutableArray<FFTableCollectionModel *> *datas;
-@property (nonatomic, assign) NSInteger textWidth;
 @property (nonatomic, assign) UIEdgeInsets cellTextMargin;
 @property (nonatomic, assign) UIEdgeInsets margin;
 @property (nonatomic, strong) UIColor *borderColor;
 @property (nonatomic, strong) NSArray *sizes;
+@property (nonatomic, assign) CollectionViewCellPosition collectionViewCellPosition;
 @end
 
 @implementation FFCollectionHeaderView
 
-- (void)collectionHeaderViewWithTextWidth:(CGFloat )textWidth cellTextMargin:(UIEdgeInsets )cellTextMargin margin:(UIEdgeInsets )margin borderColor:(UIColor *)borderColor {
-    self.textWidth = textWidth;
+- (void)collectionHeaderViewWithCellTextMargin:(UIEdgeInsets )cellTextMargin margin:(UIEdgeInsets )margin borderColor:(UIColor *)borderColor collectionViewCellPosition:(CollectionViewCellPosition)collectionViewCellPosition {
     self.cellTextMargin = cellTextMargin;
     self.borderColor = borderColor;
     self.margin = margin;
+    self.collectionViewCellPosition = collectionViewCellPosition;
 }
 
 - (void)awakeFromNib {
@@ -75,7 +75,24 @@
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    self.headerCollecionView.frame = self.bounds;
+    
+    CGFloat allSize = 0;
+    for (NSNumber *size in _sizes) {
+        allSize += [size CGSizeValue].width;
+    }
+    
+    CGFloat offset = self.bounds.size.width - allSize - _margin.left - _margin.right;
+    switch (_collectionViewCellPosition) {
+        case CollectionViewCellPositionLeft:
+            self.headerCollecionView.frame = CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height);
+            break;
+        case CollectionViewCellPositionCenter:
+            self.headerCollecionView.frame = CGRectMake(offset / 2, 0, self.bounds.size.width - offset, self.bounds.size.height);
+            break;
+        case CollectionViewCellPositionRight:
+            self.headerCollecionView.frame = CGRectMake(offset, 0, self.bounds.size.width - offset, self.bounds.size.height);
+            break;
+    }
 }
 
 - (UICollectionView *)headerCollecionView {

@@ -9,11 +9,12 @@
 #import <UIKit/UIKit.h>
 #import "FFTableCollectionModel.h"
 #import "FFTableManager.h"
+#import "FFTableCollectionViewFlowLayout.h"
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FFCollectionHeaderView : UICollectionReusableView
 @property (nonatomic, copy) void(^selectBlock)(FFMatrix matrix);
-- (void)collectionHeaderViewWithTextWidth:(CGFloat )textWidht cellTextMargin:(UIEdgeInsets )cellTextMargin margin:(UIEdgeInsets )margin borderColor:(UIColor *)borderColor;
+- (void)collectionHeaderViewWithCellTextMargin:(UIEdgeInsets )cellTextMargin margin:(UIEdgeInsets )margin borderColor:(UIColor *)borderColor collectionViewCellPosition:(CollectionViewCellPosition)collectionViewCellPosition;
 
 - (void )showDataWithModel:(NSMutableArray<FFTableCollectionModel *> *)models sizes:(NSArray *)sizes isHover:(BOOL )isHover;
 @end

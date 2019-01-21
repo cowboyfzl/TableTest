@@ -29,6 +29,7 @@
 @property (nonatomic, strong) NSMutableArray *headerCellSizes;
 @property (nonatomic, assign) BOOL showAllHeight;
 @property (nonatomic, assign) BOOL hoverHeader;
+@property (nonatomic, assign) CollectionViewCellPosition position;
 @end
 static NSInteger const DefaultCellWidth = 80;
 @implementation FFTableManager
@@ -122,6 +123,13 @@ static NSInteger const DefaultCellWidth = 80;
     return self;
 }
 
+- (FFTableManager *(^)(CollectionViewCellPosition position))collectionViewCellPosition {
+    return ^FFTableManager *(CollectionViewCellPosition position) {
+        self.position = position;
+        return self;
+    };
+}
+
 - (void)reloadData {
     if ([self.dataSource respondsToSelector:@selector(ffTableManagerNumberOfSection:)]) {
         _section = [self.dataSource ffTableManagerNumberOfSection:self];
@@ -130,17 +138,17 @@ static NSInteger const DefaultCellWidth = 80;
     [self calulateMaxWidthAndHeaderHeight];
     if (!_mainCollectionView.superview) {
         [_superV addSubview:_mainScrollView];
-        _mainCollectionView.collectionViewLayout = [self getFlowlayout];
+        self.mainCollectionView.collectionViewLayout = [self getFlowlayout];
         [_mainScrollView addSubview:self.mainCollectionView];
     }
-    
-    [_mainCollectionView reloadData];
     
     self.mainCollectionView.frame = CGRectMake(self.mainCollectionView.frame.origin.x, self.mainCollectionView.frame.origin.y, [self calulateCollectionViewWidth], CGRectGetHeight(_mainCollectionView.bounds));
     
     if (_showAllHeight) {
         [self calulateAllHeight];
     }
+    
+    [_mainCollectionView reloadData];
 }
 
 - (CGFloat)getTableHeight {
@@ -377,8 +385,7 @@ static NSInteger const DefaultCellWidth = 80;
             datas = [self.dataSource ffTableManagerHeaderViewSetData:self section:indexPath.section];
         }
         
-        CGFloat headerWidth = [_cellWidthsArr[indexPath.section][indexPath.row]floatValue];
-        [headerViwe collectionHeaderViewWithTextWidth: headerWidth cellTextMargin:_cellTextMargin margin:_margin borderColor:_cellBorderColor];
+        [headerViwe collectionHeaderViewWithCellTextMargin:_cellTextMargin margin:_margin borderColor:_cellBorderColor collectionViewCellPosition:_position];
         if (datas.count && datas.count == _cellWidthsArr[indexPath.section].count) {
             [headerViwe showDataWithModel:datas sizes:_headerCellSizes[indexPath.section] isHover:true];
         }
@@ -455,8 +462,13 @@ static NSInteger const DefaultCellWidth = 80;
 
 - (UICollectionViewFlowLayout *)getFlowlayout {
     FFTableCollectionViewFlowLayout *layout = [[FFTableCollectionViewFlowLayout alloc]init];
-    layout.collectionViewCellPosition = CollectionViewCellPositionRight;
-    layout.contentHeight = [self getTableHeight];
+    layout.collectionViewCellPosition = _position;
+    if (_cellAverageItem) {
+        layout.contentHeight = 0;
+    } else {
+        layout.contentHeight = [self getTableHeight];
+    }
+    
     NSMutableArray *columns = [NSMutableArray array];
     NSMutableArray *sectionWidths = [NSMutableArray array];
     for (NSInteger i = 0; i < _section; i++) {

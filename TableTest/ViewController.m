@@ -27,7 +27,7 @@ static NSInteger const Row = 30;
     FFTableManager *manager = [FFTableManager shareFFTableManagerWithFrame:CGRectMake(0, 0, self.scrollView.bounds.size.width, self.scrollView.bounds.size.height - 20) sView:self.scrollView];
     manager.delegate = self;
     manager.dataSource = self;
-    manager.averageItem(true).isShowAll(false);
+    manager.averageItem(false).isShowAll(false).collectionViewCellPosition(CollectionViewCellPositionCenter);
     [manager reloadData];
     _manager = manager;
     [[manager didSelectWithBlock:^(UICollectionView * _Nonnull collectionView, FFMatrix matrix, NSInteger section) {
