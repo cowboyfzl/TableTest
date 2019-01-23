@@ -29,7 +29,10 @@
         NSInteger number = [self.collectionView numberOfItemsInSection:i];
         UICollectionViewLayoutAttributes *headerAttribut = [self layoutAttributesForSupplementaryViewOfKind:UICollectionElementKindSectionHeader atIndexPath:[NSIndexPath indexPathForRow:0 inSection:i]];
         _headerOffset += headerAttribut.frame.size.height;
-        [headerArr addObject:headerAttribut];
+        if (headerAttribut) {
+            [headerArr addObject:headerAttribut];
+        }
+        
         for (NSInteger j = 0; j < number; j++) {
             NSIndexPath *indexPath = [NSIndexPath indexPathForItem:j inSection:i];
             UICollectionViewLayoutAttributes *attributes = [self layoutAttributesForItemAtIndexPath:indexPath];
@@ -94,8 +97,12 @@
     if (oldAttre.indexPath.row % sourceColumn == 0) {
         _allWidth = 0;
     }
-
-    CGFloat sectionWidth = [_sectionWidths[indexPath.section] floatValue];
+    
+    CGFloat sectionWidth = 0;
+    if (_sectionWidths.count) {
+        sectionWidth = [_sectionWidths[indexPath.section] floatValue];
+    }
+    
     CGFloat yPosition = _allHeight + _headerOffset + _edgeInsets.bottom * indexPath.section;
     switch (self.collectionViewCellPosition) {
         case CollectionViewCellPositionLeft:

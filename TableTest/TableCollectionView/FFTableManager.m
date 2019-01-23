@@ -159,8 +159,10 @@ static NSInteger const DefaultCellWidth = 80;
     double itemWidth = 0;
     for (NSInteger i = 0; i < _section; i++ ) {
         double sectionWidth = 0;
-        for (NSNumber *width in _cellWidthsArr[i]) {
-            sectionWidth += [width doubleValue];
+        if (_cellWidthsArr.count) {
+            for (NSNumber *width in _cellWidthsArr[i]) {
+                sectionWidth += [width doubleValue];
+            }
         }
         
         if ([self.delegate respondsToSelector:@selector(ffTableManager:registClassWithSection:)] && [self.delegate respondsToSelector:@selector(ffTableManager:setCollectionHeaderView:section:)]) {
@@ -176,11 +178,13 @@ static NSInteger const DefaultCellWidth = 80;
         itemWidth = sectionWidth > itemWidth ? sectionWidth : itemWidth;
     }
     
-    itemWidth += _margin.left + _margin.right;
-    _mainScrollView.contentSize = CGSizeMake(itemWidth, 0);
-    if (!itemWidth) {
+    if (itemWidth) {
+        itemWidth += _margin.left + _margin.right;
+        _mainScrollView.contentSize = CGSizeMake(itemWidth, 0);
+    } else {
         itemWidth = _mainScrollView.bounds.size.width;
     }
+
     return itemWidth;
 }
 
@@ -228,6 +232,9 @@ static NSInteger const DefaultCellWidth = 80;
         }
         NSMutableArray *itemWidths = [NSMutableArray array];
         NSInteger column = [self.dataSource ffTableManager:self columnSection:i];
+        if (column == 0) {
+            continue;
+        }
         for (NSInteger j = 0 ; j < column; j++) {
             if (!_cellAverageItem) {
                 if ([self.dataSource respondsToSelector:@selector(ffTableManager:itemWidthWithColumn:Section:margin:)]) {
@@ -300,7 +307,11 @@ static NSInteger const DefaultCellWidth = 80;
 }
 
 - (CGRect)tableManagerWithLabelTextRectWithSize:(CGSize )size withFontSize:(UIFont *)fontSize withText:(NSString *)text {
-    CGRect frame = [text boundingRectWithSize:size options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading  attributes:@{NSFontAttributeName : fontSize} context:nil];
+    CGRect frame = CGRectZero;
+    if (text.length) {
+        frame = [text boundingRectWithSize:size options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading  attributes:@{NSFontAttributeName : fontSize} context:nil];
+    }
+    
     return frame;
 }
 
@@ -473,6 +484,9 @@ static NSInteger const DefaultCellWidth = 80;
     NSMutableArray *sectionWidths = [NSMutableArray array];
     for (NSInteger i = 0; i < _section; i++) {
         NSInteger column = [self.dataSource ffTableManager:self columnSection:i];
+        if (!column) {
+            continue;
+        }
         [columns addObject:@(column)];
         NSArray *widths = _cellWidthsArr[i];
         CGFloat sectionWidth = 0;
