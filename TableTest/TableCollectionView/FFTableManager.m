@@ -195,7 +195,9 @@ static NSInteger const DefaultCellWidth = 80;
         if ([self.delegate respondsToSelector:@selector(ffTableManager:headerHeightWithSction:)]) {
             headerHeight = [self.delegate ffTableManager:self headerHeightWithSction:i];
         } else {
-            headerHeight = [_headerCellSizes[i][0]CGSizeValue].height;
+            if (_headerCellSizes.count) {
+                 headerHeight = [_headerCellSizes[i][0]CGSizeValue].height;
+            }
         }
         
         NSInteger row = [self.dataSource ffTableManager:self rowWithNumberSection:i];
@@ -290,7 +292,8 @@ static NSInteger const DefaultCellWidth = 80;
     
     for (NSInteger j = 0; j < column; j++) {
         FFMatrix matrix = MatrixMake(row - 1, j);
-        FFTableCollectionModel *model = [self.dataSource ffTableManagerSetData:self section:section matrix:matrix];
+        __weak FFTableCollectionModel *model;
+        model = [self.dataSource ffTableManagerSetData:self section:section matrix:matrix];
         CGFloat textWidth = [self calculateTextLabelWidthWithColumn:j Section:section];
         CGFloat textHeight = [self tableManagerWithLabelTextRectWithSize:CGSizeMake(textWidth, MAXFLOAT) withFontSize:model.font withText:model.content].size.height + 1;
         maxHeight = textHeight > maxHeight ? textHeight : maxHeight;
@@ -329,29 +332,30 @@ static NSInteger const DefaultCellWidth = 80;
 
 - (void)calculateHeaderCellHeightWithSection:(NSInteger )section textWidths:(NSMutableArray *)textWidths {
     CGFloat textoffset = _cellTextMargin.left + _cellTextMargin.right;
-    NSMutableArray *datas;
+    __weak NSMutableArray *datas;
     if ([self.dataSource respondsToSelector:@selector(ffTableManagerHeaderViewSetData:section:)]) {
         datas = [self.dataSource ffTableManagerHeaderViewSetData:self section:section];
     }
-    NSAssert(datas.count == textWidths.count, @"头数列数和传入的列表列数不同数据数量不一致");
-    CGFloat maxHeight = 0;
-    if (datas.count && datas.count == textWidths.count) {
-        NSInteger index = 0;
-        NSMutableArray *headerSizes = [NSMutableArray array];
-        for (FFTableCollectionModel *model in datas) {
-            CGFloat width = [textWidths[index]floatValue];
-            CGFloat textHeight = [self tableManagerWithLabelTextRectWithSize:CGSizeMake(width - textoffset, MAXFLOAT) withFontSize:model.font withText:model.content].size.height + 1;
-            textHeight += _cellTextMargin.top + _cellTextMargin.bottom;
-            maxHeight = textHeight > maxHeight ? textHeight : maxHeight;
-            index += 1;
+    if (datas.count) {
+        CGFloat maxHeight = 0;
+        if (datas.count && datas.count == textWidths.count) {
+            NSInteger index = 0;
+            NSMutableArray *headerSizes = [NSMutableArray array];
+            for (FFTableCollectionModel *model in datas) {
+                CGFloat width = [textWidths[index]floatValue];
+                CGFloat textHeight = [self tableManagerWithLabelTextRectWithSize:CGSizeMake(width - textoffset, MAXFLOAT) withFontSize:model.font withText:model.content].size.height + 1;
+                textHeight += _cellTextMargin.top + _cellTextMargin.bottom;
+                maxHeight = textHeight > maxHeight ? textHeight : maxHeight;
+                index += 1;
+            }
+            
+            for (NSNumber *width in textWidths) {
+                CGSize size = CGSizeMake([width floatValue], maxHeight);
+                [headerSizes addObject:@(size)];
+            }
+            
+            [self.headerCellSizes addObject:headerSizes];
         }
-        
-        for (NSNumber *width in textWidths) {
-            CGSize size = CGSizeMake([width floatValue], maxHeight);
-            [headerSizes addObject:@(size)];
-        }
-        
-        [self.headerCellSizes addObject:headerSizes];
     }
 }
 
@@ -391,7 +395,7 @@ static NSInteger const DefaultCellWidth = 80;
         }
         
         FFCollectionHeaderView *headerViwe = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:NSStringFromClass([FFCollectionHeaderView class]) forIndexPath:indexPath];
-        NSMutableArray *datas;
+        __weak NSMutableArray *datas;
         if ([self.dataSource respondsToSelector:@selector(ffTableManagerHeaderViewSetData:section:)]) {
             datas = [self.dataSource ffTableManagerHeaderViewSetData:self section:indexPath.section];
         }
@@ -402,14 +406,15 @@ static NSInteger const DefaultCellWidth = 80;
         }
         
         __weak typeof (self)weakSelf = self;
+        __weak typeof (collectionView)weakCollection = collectionView;
         headerViwe.selectBlock = ^(FFMatrix matrix) {
             if ([weakSelf.delegate respondsToSelector:@selector(ffTableManager:didSelectWithCollectionViewHeader:section:matrix:)]) {
-                [weakSelf.delegate ffTableManager:weakSelf didSelectWithCollectionViewHeader:collectionView section:indexPath.section matrix:matrix];
+                [weakSelf.delegate ffTableManager:weakSelf didSelectWithCollectionViewHeader:weakCollection section:indexPath.section matrix:matrix];
             }
             if (weakSelf.selectHeaderBlock) {
-                weakSelf.selectHeaderBlock(collectionView, matrix, indexPath.section);
+                weakSelf.selectHeaderBlock(weakCollection, matrix, indexPath.section);
             }
-            
+
         };
         
         return headerViwe;
@@ -445,7 +450,8 @@ static NSInteger const DefaultCellWidth = 80;
     NSInteger row = ceil(indexPath.row / sourceColumn);
     NSInteger column = indexPath.row % [self.dataSource ffTableManager:self columnSection:indexPath.section];
     FFMatrix matrix = MatrixMake(row, column);
-    FFTableCollectionModel *model = [self.dataSource ffTableManagerSetData:self section:indexPath.section matrix:matrix];
+    __weak FFTableCollectionModel *model;
+    model = [self.dataSource ffTableManagerSetData:self section:indexPath.section matrix:matrix];
     cell.currentMatrix = matrix;
     FFMatrix maxMatrix;
     [_maxMatrixs[indexPath.section]getValue:&maxMatrix];
@@ -465,9 +471,10 @@ static NSInteger const DefaultCellWidth = 80;
     if ([self.delegate respondsToSelector:@selector(ffTableManager:didSelectWithCollectionView:section:matrix:)]) {
         [self.delegate ffTableManager:self didSelectWithCollectionView:collectionView section:indexPath.section matrix:matrix];
     }
-    
+   
+    __weak typeof (collectionView)weakCollectionView = collectionView;
     if (self.selectBlock) {
-        self.selectBlock(collectionView, matrix, indexPath.section);
+        self.selectBlock(weakCollectionView, matrix, indexPath.section);
     }
 }
 

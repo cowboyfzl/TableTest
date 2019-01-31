@@ -11,11 +11,11 @@
 #import "FFTableCollectionViewCell.h"
 @interface FFCollectionHeaderView ()<UICollectionViewDelegate, UICollectionViewDataSource>
 @property (strong, nonatomic) UICollectionView *headerCollecionView;
-@property (nonatomic, strong) NSMutableArray<FFTableCollectionModel *> *datas;
+@property (nonatomic, weak) NSMutableArray<FFTableCollectionModel *> *datas;
 @property (nonatomic, assign) UIEdgeInsets cellTextMargin;
 @property (nonatomic, assign) UIEdgeInsets margin;
-@property (nonatomic, strong) UIColor *borderColor;
-@property (nonatomic, strong) NSArray *sizes;
+@property (nonatomic, weak) UIColor *borderColor;
+@property (nonatomic, weak) NSArray *sizes;
 @property (nonatomic, assign) CollectionViewCellPosition collectionViewCellPosition;
 @end
 
