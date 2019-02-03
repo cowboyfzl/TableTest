@@ -142,7 +142,7 @@ static NSInteger const DefaultCellWidth = 80;
         [_mainScrollView addSubview:self.mainCollectionView];
     }
     
-    self.mainCollectionView.frame = CGRectMake(self.mainCollectionView.frame.origin.x, self.mainCollectionView.frame.origin.y, [self calulateCollectionViewWidth], CGRectGetHeight(_mainCollectionView.bounds));
+    self.mainCollectionView.frame = CGRectMake(self.mainCollectionView.frame.origin.x, self.mainCollectionView.frame.origin.y, [self calulateCollectionViewWidth], CGRectGetHeight(_mainScrollView.bounds));
     
     if (_showAllHeight) {
         [self calulateAllHeight];
@@ -165,7 +165,7 @@ static NSInteger const DefaultCellWidth = 80;
             }
         }
         
-        if ([self.delegate respondsToSelector:@selector(ffTableManager:registClassWithSection:)] && [self.delegate respondsToSelector:@selector(ffTableManager:setCollectionHeaderView:section:)]) {
+        if ([self.delegate respondsToSelector:@selector(ffTableManager:registClassWithSection:)]) {
             Class class = [self.delegate ffTableManager:self registClassWithSection:i];
             NSString *nibPath = [[NSBundle mainBundle]pathForResource:NSStringFromClass(class) ofType:@"nib"];
             if (nibPath.length) {

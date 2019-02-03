@@ -124,7 +124,7 @@ typedef void(^FFSelectBlock)(UICollectionView *collectionView, FFMatrix matrix, 
  @param section 对应的组
  @return 类名
  */
-- (Class )ffTableManager:(FFTableManager *)FFTableManager registClassWithSection:(NSInteger )section;
+- (Class)ffTableManager:(FFTableManager *)FFTableManager registClassWithSection:(NSInteger )section;
 
 /**
  配合上面用的给自定义头赋值
@@ -132,7 +132,7 @@ typedef void(^FFSelectBlock)(UICollectionView *collectionView, FFMatrix matrix, 
  @param ffTableCollectionView 自定义的UICollectionReusableView 记着强转成传入的类型
  @param section 分组
  */
-- (void )ffTableManager:(FFTableManager *)FFTableManager setCollectionHeaderView:(UICollectionReusableView *)ffTableCollectionView section:(NSInteger )section;
+- (void)ffTableManager:(FFTableManager *)FFTableManager setCollectionHeaderView:(UICollectionReusableView *)ffTableCollectionView section:(NSInteger )section;
 
 /**
  头的高度
