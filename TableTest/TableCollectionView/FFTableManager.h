@@ -29,7 +29,7 @@ MatrixMake(NSInteger row, CGFloat column)
     matrix.column = column;
     return matrix;
 }
-typedef void(^FFSelectBlock)(UICollectionView *collectionView, FFMatrix matrix, NSInteger section);
+typedef void(^FFSelectBlock)(UICollectionView * _Nullable collectionView, FFMatrix matrix, NSInteger section);
 @protocol FFTableManagerDataSource <NSObject>
 
 @required
@@ -112,6 +112,14 @@ typedef void(^FFSelectBlock)(UICollectionView *collectionView, FFMatrix matrix, 
  */
 - (NSMutableArray <FFTableCollectionModel *>*)ffTableManagerHeaderViewSetData:(FFTableManager *)FFTableManager section:(NSInteger )section;
 
+/**
+ 设置固定表头的数据
+
+ @param FFTableManager 管理类
+ @return 数据
+ */
+- (FFTableCollectionModel *)ffTableManagerFixHeaderViewSetData:(FFTableManager *)FFTableManager;
+
 @end
 
 @protocol FFTableManagerDelegate <NSObject>
@@ -156,7 +164,7 @@ typedef void(^FFSelectBlock)(UICollectionView *collectionView, FFMatrix matrix, 
  @param section 第几组
  @param matrix 矩阵
  */
-- (void)ffTableManager:(FFTableManager *)FFTableManager didSelectWithCollectionView:(UICollectionView *)collectionView section:(NSInteger )section matrix:(FFMatrix )matrix;
+- (void)ffTableManager:(FFTableManager *)FFTableManager didSelectWithCollectionView:(UICollectionView * _Nullable)collectionView section:(NSInteger )section matrix:(FFMatrix )matrix;
 
 /**
  点击头的回调
@@ -243,6 +251,13 @@ typedef void(^FFSelectBlock)(UICollectionView *collectionView, FFMatrix matrix, 
  设置可左右滑动表格在多组数据不同列的情况下布局方式
  */
 - (FFTableManager *(^)(CollectionViewCellPosition position))collectionViewCellPosition;
+
+
+/**
+ 固定左边一排数据
+ */
+- (FFTableManager *(^)(BOOL fixedFirstcolumn))setFixedFirstcolumn;
+
 /**
  点击cell回调
 

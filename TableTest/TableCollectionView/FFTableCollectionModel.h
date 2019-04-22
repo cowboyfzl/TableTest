@@ -12,12 +12,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FFTableCollectionModel : NSObject
 @property (nonatomic, copy) NSString *content;
+@property (nonatomic, copy) NSString *code;
 @property (nonatomic, copy) NSString *type;
+@property (nonatomic, copy) NSString *otherType;
+@property (nonatomic, copy) NSString *modelId;
 @property (nonatomic, getter=isSelect) BOOL select;
 @property (nonatomic, strong) UIColor *textColor;
 @property (nonatomic, strong) UIColor *bgColor;
 @property (nonatomic, strong) UIFont *font;
-+ (instancetype)tableCollectionModelWithContent:(NSString *)content textColor:(UIColor *)textColor font:(UIFont *)font bgColor:(UIColor *)bgColor type:(NSString * _Nullable)type select:(BOOL )select;
++ (instancetype)tableCollectionModelWithContent:(NSString *)content textColor:(UIColor *)textColor font:(UIFont *)font bgColor:(UIColor *)bgColor type:(NSString * _Nullable)type code:(NSString * _Nullable)code select:(BOOL )select;
 @end
 
 NS_ASSUME_NONNULL_END

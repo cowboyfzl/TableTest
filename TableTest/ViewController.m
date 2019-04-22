@@ -69,18 +69,18 @@ static NSInteger const Row = 30;
     return 0;
 }
 
-//- (NSArray *)ffTableManager:(FFTableManager *)FFTableManager itemWidtWeightCoefficienthWithSection:(NSInteger)section {
-//    switch (section) {
-//        case 0:
-//            return @[@1.5,@1.5,@1,@1,@1,@1];
-//            break;
-//            
-//        case 1:
-//            return @[@1.5,@1.5,@1,@1,@1];
-//            break;
-//    }
-//    return nil;
-//}
+- (NSArray *)ffTableManager:(FFTableManager *)FFTableManager itemWidtWeightCoefficienthWithSection:(NSInteger)section {
+    switch (section) {
+        case 0:
+            return @[@1.5,@1.5,@1,@1,@1,@1];
+            break;
+            
+        case 1:
+            return @[@1.5,@1.5,@1,@1,@1];
+            break;
+    }
+    return nil;
+}
 
 //- (CGFloat )ffTableManagerItemWidthWithColumn:(NSInteger )column Section:(NSInteger )section margin:(UIEdgeInsets )margin {
 //    CGFloat w = self.view.bounds.size.width - margin.left - margin.right;

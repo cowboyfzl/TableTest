@@ -9,7 +9,7 @@
 
 #import "FFCollectionHeaderView.h"
 #import "FFTableCollectionViewCell.h"
-@interface FFCollectionHeaderView ()<UICollectionViewDelegate, UICollectionViewDataSource>
+@interface FFCollectionHeaderView ()<UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout>
 @property (strong, nonatomic) UICollectionView *headerCollecionView;
 @property (nonatomic, weak) NSMutableArray<FFTableCollectionModel *> *datas;
 @property (nonatomic, assign) UIEdgeInsets cellTextMargin;
@@ -45,19 +45,13 @@
     return cell;
 }
 
-- (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout minimumLineSpacingForSectionAtIndex:(NSInteger)section {
-    return 0;
-}
-- (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section {
-    return 0;
-}
-
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
     return _margin;
 }
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    return [_sizes[indexPath.row]CGSizeValue];
+    CGSize size = [_sizes[indexPath.row]CGSizeValue];
+    return size;
 }
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -95,9 +89,15 @@
     }
 }
 
+- (float)roundFloat:(float)price{
+    return (floorf(price * 100 + 0.5)) / 100;
+}
+
 - (UICollectionView *)headerCollecionView {
     if (!_headerCollecionView) {
         UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc]init];
+        layout.minimumLineSpacing = 0;
+        layout.minimumInteritemSpacing = 0;
         _headerCollecionView = [[UICollectionView alloc]initWithFrame:CGRectZero collectionViewLayout:layout];
         _headerCollecionView.delegate = self;
         _headerCollecionView.dataSource = self;

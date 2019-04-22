@@ -7,18 +7,14 @@
 //
 
 #import "FFTableCollectionViewCell.h"
-typedef NS_ENUM(NSInteger, ScreenType) {
-    ScreenType320 = 320,
-    ScreenType375 = 375,
-    ScreenType414 = 414,
-};
+
 @interface FFTableCollectionViewCell ()
 @property (weak, nonatomic) IBOutlet UILabel *contentLabel;
 @property (strong, nonatomic) IBOutletCollection(NSLayoutConstraint) NSArray *LabelOffsets;
 @property (nonatomic, strong) CAShapeLayer *borderLayer;
 @end
-static NSInteger const FFBorderWidth = 1;
-static CGFloat const LineOffst = 0.2;
+NSInteger const FFTableCollectionViewWidth = 1;
+CGFloat const FFTableCollectionViewCellLineOffst = 0.2;
 @implementation FFTableCollectionViewCell
 
 - (void)awakeFromNib {
@@ -34,6 +30,19 @@ static CGFloat const LineOffst = 0.2;
     _contentLabel.text = model.content;
     self.contentView.backgroundColor = model.bgColor?: [UIColor whiteColor];
     _borderLayer.strokeColor = borderColor.CGColor ?: [UIColor lightGrayColor].CGColor;
+    NSInteger i = 0;
+    for (NSLayoutConstraint *constraint in _LabelOffsets) {
+        switch (i) {
+            case 0:
+                constraint.constant = edge.right;
+                break;
+                
+            case 1:
+                constraint.constant = edge.left;
+                break;
+        }
+        i += 1;
+    }
     [self setFrameWithSize:size];
 }
 
@@ -47,23 +56,23 @@ static CGFloat const LineOffst = 0.2;
     
     if (self.ishaveHeader) {
         if (_currentMatrix.row == 0 && _currentMatrix.column == 0) {
-            [path moveToPoint:CGPointMake(LineOffst, size.height - (LineOffst * 2))];
-            [path addLineToPoint:CGPointMake(LineOffst, LineOffst)];
+            [path moveToPoint:CGPointMake(FFTableCollectionViewCellLineOffst, size.height - (FFTableCollectionViewCellLineOffst * 2))];
+            [path addLineToPoint:CGPointMake(FFTableCollectionViewCellLineOffst, FFTableCollectionViewCellLineOffst)];
             
-            [path moveToPoint:CGPointMake(size.width - (LineOffst * 2), LineOffst)];
-            [path addLineToPoint:CGPointMake(size.width - (LineOffst * 2), size.height - (LineOffst * 2))];
+            [path moveToPoint:CGPointMake(size.width - (FFTableCollectionViewCellLineOffst * 2), FFTableCollectionViewCellLineOffst)];
+            [path addLineToPoint:CGPointMake(size.width - (FFTableCollectionViewCellLineOffst * 2), size.height - (FFTableCollectionViewCellLineOffst * 2))];
         }
         
         if (_currentMatrix.row == 0 && _currentMatrix.column > 0) {
-            [path moveToPoint:CGPointMake(size.width - (LineOffst * 2), LineOffst)];
-            [path addLineToPoint:CGPointMake(size.width - (LineOffst * 2), size.height - (LineOffst * 2))];
+            [path moveToPoint:CGPointMake(size.width - (FFTableCollectionViewCellLineOffst * 2), FFTableCollectionViewCellLineOffst)];
+            [path addLineToPoint:CGPointMake(size.width - (FFTableCollectionViewCellLineOffst * 2), size.height - (FFTableCollectionViewCellLineOffst * 2))];
         }
         
         if (_currentMatrix.row > 0) {
             [self drawPath:path size:size];
         } else {
             if (_currentMatrix.row == _maxMatrix.row ) {
-                [path addLineToPoint:CGPointMake(LineOffst , size.height - (LineOffst * 2))];
+                [path addLineToPoint:CGPointMake(FFTableCollectionViewCellLineOffst , size.height - (FFTableCollectionViewCellLineOffst * 2))];
             }
         }
         
@@ -76,20 +85,20 @@ static CGFloat const LineOffst = 0.2;
 
 - (void )drawPath:(UIBezierPath *)path size:(CGSize )size {
     if (_currentMatrix.column == 0) {
-        [path moveToPoint:CGPointMake(LineOffst, size.height - (LineOffst * 2))];
-        [path addLineToPoint:CGPointMake(LineOffst, LineOffst)];
-        [path addLineToPoint:CGPointMake(size.width - (LineOffst * 2), LineOffst)];
-        [path addLineToPoint:CGPointMake(size.width - (LineOffst * 2), size.height - LineOffst)];
+        [path moveToPoint:CGPointMake(FFTableCollectionViewCellLineOffst, size.height - (FFTableCollectionViewCellLineOffst * 2))];
+        [path addLineToPoint:CGPointMake(FFTableCollectionViewCellLineOffst, FFTableCollectionViewCellLineOffst)];
+        [path addLineToPoint:CGPointMake(size.width - (FFTableCollectionViewCellLineOffst * 2), FFTableCollectionViewCellLineOffst)];
+        [path addLineToPoint:CGPointMake(size.width - (FFTableCollectionViewCellLineOffst * 2), size.height - FFTableCollectionViewCellLineOffst)];
     }
     
     if (_currentMatrix.column > 0) {
-        [path moveToPoint:CGPointMake(LineOffst, LineOffst)];
-        [path addLineToPoint:CGPointMake(size.width - (LineOffst * 2), LineOffst)];
-        [path addLineToPoint:CGPointMake(size.width - (LineOffst * 2), size.height - (LineOffst * 2))];
+        [path moveToPoint:CGPointMake(FFTableCollectionViewCellLineOffst, FFTableCollectionViewCellLineOffst)];
+        [path addLineToPoint:CGPointMake(size.width - (FFTableCollectionViewCellLineOffst * 2), FFTableCollectionViewCellLineOffst)];
+        [path addLineToPoint:CGPointMake(size.width - (FFTableCollectionViewCellLineOffst * 2), size.height - (FFTableCollectionViewCellLineOffst * 2))];
     }
     
     if (_currentMatrix.row == _maxMatrix.row ) {
-        [path addLineToPoint:CGPointMake(LineOffst , size.height - (LineOffst * 2))];
+        [path addLineToPoint:CGPointMake(FFTableCollectionViewCellLineOffst , size.height - (FFTableCollectionViewCellLineOffst * 2))];
     }
 }
 
@@ -117,7 +126,7 @@ static CGFloat const LineOffst = 0.2;
     if (!_borderLayer) {
         _borderLayer = [CAShapeLayer layer];
         _borderLayer.fillColor = [UIColor clearColor].CGColor;
-        _borderLayer.borderWidth = FFBorderWidth;
+        _borderLayer.borderWidth = FFTableCollectionViewWidth;
     }
     return _borderLayer;
 }

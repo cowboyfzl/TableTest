@@ -9,6 +9,15 @@
 #import <UIKit/UIKit.h>
 #import "FFTableCollectionModel.h"
 #import "FFTableManager.h"
+
+extern CGFloat const FFTableCollectionViewCellLineOffst;
+extern NSInteger const FFTableCollectionViewWidth;
+
+typedef NS_ENUM(NSInteger, ScreenType) {
+    ScreenType320 = 320,
+    ScreenType375 = 375,
+    ScreenType414 = 414,
+};
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FFTableCollectionViewCell : UICollectionViewCell

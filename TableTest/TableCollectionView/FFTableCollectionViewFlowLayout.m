@@ -52,17 +52,12 @@
     return arr;
 }
 
-- (BOOL)shouldInvalidateLayoutForBoundsChange:(CGRect)newBounds {
-    return true;
-}
-
 - (CGSize)collectionViewContentSize {
     if (_contentHeight) {
         return CGSizeMake(self.collectionView.bounds.size.width, _contentHeight);
     } else {
         return [super collectionViewContentSize];
     }
-    
 }
 
 - (NSMutableArray *)attrsArr {
@@ -74,7 +69,9 @@
 
 - (UICollectionViewLayoutAttributes *)layoutAttributesForItemAtIndexPath:(NSIndexPath *)indexPath {
    UICollectionViewLayoutAttributes *oldAttre = [super layoutAttributesForItemAtIndexPath:indexPath];
-    NSInteger sourceColumn = [self.columns[oldAttre.indexPath.section] integerValue];
+    NSInteger sourceColumn = 0;
+    sourceColumn = [self.columns[oldAttre.indexPath.section] integerValue];
+    
     NSInteger row = ceil(oldAttre.indexPath.row / sourceColumn);
     CGFloat width = oldAttre.frame.size.width;
     CGFloat height = oldAttre.frame.size.height;
