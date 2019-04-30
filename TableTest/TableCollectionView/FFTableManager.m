@@ -12,8 +12,8 @@
 #import "UICollectionViewFlowLayout+Add.h"
 #import "FFCollectionHeaderView.h"
 #import "FixedTableViewTableViewCell.h"
-
-@interface FFTableManager () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UITableViewDelegate, UITableViewDataSource>
+#import "FFColectionView.h"
+@interface FFTableManager () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>
 
 @property (nonatomic, assign) UIEdgeInsets margin;
 @property (nonatomic, assign) UIEdgeInsets cellTextMargin;
@@ -34,7 +34,7 @@
 @property (nonatomic, assign) CGFloat beforCollectionWidth;
 @property (nonatomic, assign) BOOL isFixedFirstcolumn;
 @property (nonatomic, assign) CollectionViewCellPosition position;
-@property (nonatomic, strong) UITableView *fixedTableView;
+@property (nonatomic, strong) FFColectionView *fixedCollectionView;
 @property (nonatomic, assign) CGFloat fixedTableViewWidth;
 @property (nonatomic, assign) BOOL isRotate;
 @property (nonatomic, assign) CGFloat beforContentOffset;
@@ -73,7 +73,7 @@ static NSInteger const DefaultCellWidth = 80;
 
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIDeviceOrientationDidChangeNotification object:nil];
-//    [self.superV removeObserver:self forKeyPath:@"frame"];
+    //    [self.superV removeObserver:self forKeyPath:@"frame"];
 }
 
 - (FFTableManager *(^)(UIEdgeInsets edge))setTableCellTextMargin {
@@ -98,7 +98,10 @@ static NSInteger const DefaultCellWidth = 80;
 - (FFTableManager * _Nonnull (^)(UIView * _Nonnull))sView {
     return ^FFTableManager *(UIView *sView) {
         self.superV = sView;
-//        [self.superV addObserver:self forKeyPath:@"frame" options:NSKeyValueObservingOptionNew context:nil];
+        if (self.isFixedFirstcolumn) {
+            [self fixedCollectionView];
+        }
+        //        [self.superV addObserver:self forKeyPath:@"frame" options:NSKeyValueObservingOptionNew context:nil];
         [self.superV addSubview:self.mainScrollView];
         return self;
     };
@@ -174,42 +177,39 @@ static NSInteger const DefaultCellWidth = 80;
     
     [self.maxMatrixs removeAllObjects];
     [self calulateMaxWidthAndHeaderHeight];
-    if (!_mainCollectionView.superview) {
-        [_superV addSubview:_mainScrollView];
-        //self.mainCollectionView.collectionViewLayout = [self getFlowlayout];
-        [_mainScrollView addSubview:self.mainCollectionView];
-    }
-//    else {
-//        FFTableCollectionViewFlowLayout *layout = (FFTableCollectionViewFlowLayout *)self.mainCollectionView.collectionViewLayout;
-//        layout.collectionViewCellPosition = _position;
-//        if (_cellAverageItem) {
-//            layout.contentHeight = 0;
-//        } else {
-//            layout.contentHeight = [self getTableHeight];
-//        }
-//    }
-    
     CGRect fixTableRect = CGRectZero;
     CGRect mainScrollViewRect = _superV.bounds;
     [self calulateAllHeight];
     if (self.isFixedFirstcolumn && _section == 1) {
         fixTableRect = CGRectMake(_margin.left, 0, _fixedTableViewWidth, CGRectGetHeight(_superV.frame));
-        self.fixedTableView.frame = fixTableRect;
+        if (!CGRectEqualToRect(fixTableRect, self.fixedCollectionView.frame)) {
+            self.fixedCollectionView.frame = fixTableRect;
+        }
+        
         mainScrollViewRect = CGRectMake(fixTableRect.size.width + _margin.left, 0, mainScrollViewRect.size.width - fixTableRect.size.width - _margin.left, mainScrollViewRect.size.height);
-         [_fixedTableView reloadData];
+        [_fixedCollectionView reloadData];
     } else {
-        if (_fixedTableView) {
-            [_fixedTableView removeFromSuperview];
-            _fixedTableView = nil;
-//             self.mainCollectionView.collectionViewLayout = [self getFlowlayout];
+        if (_fixedCollectionView) {
+            [_fixedCollectionView removeFromSuperview];
+            _fixedCollectionView = nil;
         }
     }
     
-    self.mainScrollView.frame = mainScrollViewRect;
-    self.mainCollectionView.frame = CGRectMake(self.mainCollectionView.frame.origin.x, self.mainCollectionView.frame.origin.y, [self calulateCollectionViewWidth], CGRectGetHeight(_mainScrollView.bounds));
+    if (!_mainCollectionView.superview) {
+        [_superV addSubview:_mainScrollView];
+        [_mainScrollView addSubview:self.mainCollectionView];
+    }
+    
+    if (!CGRectEqualToRect(mainScrollViewRect, self.mainScrollView.frame)) {
+        self.mainScrollView.frame = mainScrollViewRect;
+        self.mainCollectionView.frame = CGRectMake(self.mainCollectionView.frame.origin.x, self.mainCollectionView.frame.origin.y, [self calulateCollectionViewWidth], CGRectGetHeight(_mainScrollView.bounds));
+    }
+    
     [_mainCollectionView reloadData];
+    
+    
     if (_isRotate) {
-        _fixedTableView.contentOffset = CGPointZero;
+        _fixedCollectionView.contentOffset = CGPointZero;
         _mainCollectionView.contentOffset = CGPointZero;
         _isRotate = false;
     }
@@ -244,11 +244,12 @@ static NSInteger const DefaultCellWidth = 80;
     
     if (itemWidth) {
         itemWidth += _margin.left + _margin.right;
-        _mainScrollView.contentSize = CGSizeMake(itemWidth, 0);
+        NSInteger offset = _isFixedFirstcolumn;
+        _mainScrollView.contentSize = CGSizeMake(itemWidth + offset, 0);
     } else {
         itemWidth = _mainScrollView.bounds.size.width;
     }
-
+    
     return itemWidth;
 }
 
@@ -260,7 +261,7 @@ static NSInteger const DefaultCellWidth = 80;
             headerHeight = [self.delegate ffTableManager:self headerHeightWithSction:i];
         } else {
             if (_headerCellSizes.count) {
-                 headerHeight = [_headerCellSizes[i][0]CGSizeValue].height;
+                headerHeight = [_headerCellSizes[i][0]CGSizeValue].height;
             }
         }
         
@@ -463,27 +464,40 @@ static NSInteger const DefaultCellWidth = 80;
 }
 
 - (NSInteger)collectionView:(nonnull UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    return [self calulateAllCountWithSection:section];
+    if ([collectionView isEqual:_mainCollectionView]) {
+        return [self calulateAllCountWithSection:section];
+    } else {
+        return [self.dataSource ffTableManager:self rowWithNumberSection:section];
+    }
 }
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
-    if ([self.delegate respondsToSelector:@selector(ffTableManager:headerHeightWithSction:)]) {
-        CGFloat height = [self.delegate ffTableManager:self headerHeightWithSction:section];
-        return CGSizeMake(collectionView.bounds.size.width, height);
-    }
-
-    if (_headerCellSizes.count) {
-        CGSize size = [_headerCellSizes[section][0]CGSizeValue];
-        size.height += _margin.top;
-        size.width = collectionView.bounds.size.width;
-        return size;
+    if ([collectionView isEqual:_mainCollectionView]) {
+        if ([self.delegate respondsToSelector:@selector(ffTableManager:headerHeightWithSction:)]) {
+            CGFloat height = [self.delegate ffTableManager:self headerHeightWithSction:section];
+            return CGSizeMake(collectionView.bounds.size.width, height);
+        }
+        
+        if (_headerCellSizes.count) {
+            CGSize size = [_headerCellSizes[section][0]CGSizeValue];
+            size.height += _margin.top;
+            size.width = collectionView.bounds.size.width;
+            return size;
+        } else {
+            return CGSizeZero;
+        }
     } else {
-        return CGSizeZero;
+        CGFloat height = 0;
+        if ([self.delegate respondsToSelector:@selector(ffTableManager:headerHeightWithSction:)]) {
+            height = [self.delegate ffTableManager:self headerHeightWithSction:section];
+        }
+        
+        return CGSizeMake(_fixedTableViewWidth, height);
     }
 }
 
 - (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath {
-    if ([kind isEqualToString: UICollectionElementKindSectionHeader]) {
+    if ([kind isEqualToString: UICollectionElementKindSectionHeader] && [collectionView isEqual:_mainCollectionView]) {
         if ([self.delegate respondsToSelector:@selector(ffTableManager:setCollectionHeaderView:section:)] && [self.delegate respondsToSelector:@selector(ffTableManager:registClassWithSection:)]) {
             Class class = [self.delegate ffTableManager:self registClassWithSection:indexPath.section];
             UICollectionReusableView *headerViwe = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:NSStringFromClass(class) forIndexPath:indexPath];
@@ -515,21 +529,44 @@ static NSInteger const DefaultCellWidth = 80;
         };
         
         return headerViwe;
+    } else {
+        FFCollectionHeaderView *headerViwe = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:NSStringFromClass([FFCollectionHeaderView class]) forIndexPath:indexPath];
+        headerViwe.left = _isFixedFirstcolumn;
+        FFTableCollectionModel *model;
+        if ([self.dataSource respondsToSelector:@selector(ffTableManagerFixHeaderViewSetData:)]) {
+            model = [self.dataSource ffTableManagerFixHeaderViewSetData:self];
+        }
+        
+        CGFloat height = 0;
+        if ([self.delegate respondsToSelector:@selector(ffTableManager:headerHeightWithSction:)]) {
+            height = [self.delegate ffTableManager:self headerHeightWithSction:_section];
+        }
+        
+        [headerViwe collectionHeaderViewWithCellTextMargin:_cellTextMargin margin:_margin borderColor:_cellBorderColor collectionViewCellPosition:_position];
+        [headerViwe showDataWithModel:[@[model] mutableCopy] sizes:@[@(CGSizeMake(_fixedTableViewWidth, height))] isHover:true];
+        return headerViwe;
     }
     
     return nil;
 }
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    NSInteger column = [self.dataSource ffTableManager:self columnSection:indexPath.section];
-    if (self.isFixedFirstcolumn && _section == 1) {
-        column -= 1;
+    if ([collectionView isEqual:_mainCollectionView]) {
+        NSInteger column = [self.dataSource ffTableManager:self columnSection:indexPath.section];
+        if (self.isFixedFirstcolumn && _section == 1) {
+            column -= 1;
+        }
+        
+        NSInteger row = ceil(indexPath.row / column) + 1;
+        NSInteger currnetColumn = indexPath.row % column;
+        CGFloat height = [self calculateRowMaxHeightWithSection:indexPath.section row:row];
+        return CGSizeMake([_cellWidthsArr[indexPath.section][currnetColumn]floatValue], height);
+    } else {
+        NSString *key = [NSString stringWithFormat:@"%ld-%ld", (long)0, (long)indexPath.row + 1];
+        CGFloat height = [_cacheRowHeight[key] floatValue];
+        return CGSizeMake(_fixedTableViewWidth, height);
     }
     
-    NSInteger row = ceil(indexPath.row / column) + 1;
-    NSInteger currnetColumn = indexPath.row % column;
-    CGFloat height = [self calculateRowMaxHeightWithSection:indexPath.section row:row];
-    return CGSizeMake([_cellWidthsArr[indexPath.section][currnetColumn]floatValue], height);
 }
 
 - (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout minimumLineSpacingForSectionAtIndex:(NSInteger)section {
@@ -554,54 +591,83 @@ static NSInteger const DefaultCellWidth = 80;
 }
 
 - (nonnull __kindof UICollectionViewCell *)collectionView:(nonnull UICollectionView *)collectionView cellForItemAtIndexPath:(nonnull NSIndexPath *)indexPath {
-    FFTableCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:NSStringFromClass([FFTableCollectionViewCell class]) forIndexPath:indexPath];
-    NSInteger sourceColumn = [self.dataSource ffTableManager:self columnSection:indexPath.section];
-    if (self.isFixedFirstcolumn && _section == 1) {
-        sourceColumn -= 1;
-    }
-    
-    NSInteger row = ceil(indexPath.row / sourceColumn);
-    NSInteger column = indexPath.row % sourceColumn;
-    FFMatrix matrix = MatrixMake(row, column);
-    __weak FFTableCollectionModel *model;
-    
-    if (self.isFixedFirstcolumn && _section == 1) {
-        FFMatrix fiexMatrix = MatrixMake(matrix.row, matrix.column + 1);
-        model = [self.dataSource ffTableManagerSetData:self section:indexPath.section matrix:fiexMatrix];
+    if ([collectionView isEqual:_mainCollectionView]) {
+        FFTableCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:NSStringFromClass([FFTableCollectionViewCell class]) forIndexPath:indexPath];
+        NSInteger sourceColumn = [self.dataSource ffTableManager:self columnSection:indexPath.section];
+        if (self.isFixedFirstcolumn && _section == 1) {
+            sourceColumn -= 1;
+        }
+        
+        NSInteger row = ceil(indexPath.row / sourceColumn);
+        NSInteger column = indexPath.row % sourceColumn;
+        FFMatrix matrix = MatrixMake(row, column);
+        __weak FFTableCollectionModel *model;
+        
+        if (self.isFixedFirstcolumn && _section == 1) {
+            FFMatrix fiexMatrix = MatrixMake(matrix.row, matrix.column + 1);
+            model = [self.dataSource ffTableManagerSetData:self section:indexPath.section matrix:fiexMatrix];
+        } else {
+            model = [self.dataSource ffTableManagerSetData:self section:indexPath.section matrix:matrix];
+        }
+        
+        cell.currentMatrix = matrix;
+        FFMatrix maxMatrix = MatrixMake(0, 0);
+        if (_maxMatrixs.count > 0) {
+            [_maxMatrixs[indexPath.section]getValue:&maxMatrix];
+        }
+        
+        cell.maxMatrix = maxMatrix;
+        cell.haveHeader = [self.dataSource respondsToSelector:@selector(ffTableManagerHeaderViewSetData:section:)];
+        NSString *key = [NSString stringWithFormat:@"%ld-%ld", (long)indexPath.section, (long)row + 1];
+        [cell showDataWithModel:model borderColor:_cellBorderColor edge:_cellTextMargin size:CGSizeMake([_cellWidthsArr[indexPath.section][column]floatValue], [_cacheRowHeight[key] floatValue])];
+        return cell;
     } else {
-        model = [self.dataSource ffTableManagerSetData:self section:indexPath.section matrix:matrix];
+        FFTableCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:NSStringFromClass([FFTableCollectionViewCell class]) forIndexPath:indexPath];
+        cell.left = _isFixedFirstcolumn;
+        FFMatrix fiexMatrix = MatrixMake(indexPath.row, 0);
+        cell.currentMatrix = fiexMatrix;
+        cell.haveHeader = [self.dataSource respondsToSelector:@selector(ffTableManagerHeaderViewSetData:section:)];
+        cell.maxMatrix = MatrixMake([self.dataSource ffTableManager:self rowWithNumberSection:indexPath.section] - 1, 0);
+        FFTableCollectionModel *model = [self.dataSource ffTableManagerSetData:self section:indexPath.section matrix:fiexMatrix];
+        
+        NSString *key = [NSString stringWithFormat:@"%ld-%ld", (long)0, (long)indexPath.row + 1];
+        CGFloat height = [_cacheRowHeight[key] floatValue];
+        [cell showDataWithModel:model borderColor:_cellBorderColor edge:_margin size:CGSizeMake(collectionView.bounds.size.width, height)];
+        return cell;
     }
-    
-    cell.currentMatrix = matrix;
-    FFMatrix maxMatrix = MatrixMake(0, 0);
-    if (_maxMatrixs.count > 0) {
-        [_maxMatrixs[indexPath.section]getValue:&maxMatrix];
-    }
-    
-    cell.maxMatrix = maxMatrix;
-    cell.haveHeader = [self.dataSource respondsToSelector:@selector(ffTableManagerHeaderViewSetData:section:)];
-    NSString *key = [NSString stringWithFormat:@"%ld-%ld", (long)indexPath.section, (long)row + 1];
-    [cell showDataWithModel:model borderColor:_cellBorderColor edge:_cellTextMargin size:CGSizeMake([_cellWidthsArr[indexPath.section][column]floatValue], [_cacheRowHeight[key] floatValue])];
-    return cell;
 }
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    NSInteger sourceColumn = [self.dataSource ffTableManager:self columnSection:indexPath.section];
-    if (self.isFixedFirstcolumn && _section == 1) {
-        sourceColumn -= 1;
+    if ([collectionView isEqual:_mainCollectionView]) {
+        NSInteger sourceColumn = [self.dataSource ffTableManager:self columnSection:indexPath.section];
+        if (self.isFixedFirstcolumn && _section == 1) {
+            sourceColumn -= 1;
+        }
+        
+        NSInteger row = ceil(indexPath.row / sourceColumn);
+        NSInteger column = indexPath.row % sourceColumn;
+        FFMatrix matrix = MatrixMake(row, column);
+        if ([self.delegate respondsToSelector:@selector(ffTableManager:didSelectWithCollectionView:section:matrix:)]) {
+            [self.delegate ffTableManager:self didSelectWithCollectionView:collectionView section:indexPath.section matrix:matrix];
+        }
+        
+        if (self.selectBlock) {
+            __weak typeof (collectionView)weakCollectionView = collectionView;
+            self.selectBlock(weakCollectionView, matrix, indexPath.section);
+        }
+        
+        
+    } else {
+        FFMatrix matrix = MatrixMake(indexPath.row, 0);
+        if ([self.delegate respondsToSelector:@selector(ffTableManager:didSelectWithCollectionView:section:matrix:)]) {
+            [self.delegate ffTableManager:self didSelectWithCollectionView:nil section:indexPath.section matrix:matrix];
+        }
+        
+        if (self.selectBlock) {
+            self.selectBlock(nil, matrix, indexPath.section);
+        }
     }
     
-    NSInteger row = ceil(indexPath.row / sourceColumn);
-    NSInteger column = indexPath.row % [self.dataSource ffTableManager:self columnSection:indexPath.section];
-    FFMatrix matrix = MatrixMake(row, column);
-    if ([self.delegate respondsToSelector:@selector(ffTableManager:didSelectWithCollectionView:section:matrix:)]) {
-        [self.delegate ffTableManager:self didSelectWithCollectionView:collectionView section:indexPath.section matrix:matrix];
-    }
-   
-    __weak typeof (collectionView)weakCollectionView = collectionView;
-    if (self.selectBlock) {
-        self.selectBlock(weakCollectionView, matrix, indexPath.section);
-    }
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -768,18 +834,22 @@ static NSInteger const DefaultCellWidth = 80;
     return _mainCollectionView;
 }
 
-- (UITableView *)fixedTableView {
-    if (!_fixedTableView) {
-        _fixedTableView = [[UITableView alloc]init];
-        _fixedTableView.delegate = self;
-        _fixedTableView.dataSource = self;
-        _fixedTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-        _fixedTableView.showsVerticalScrollIndicator = false;
-//        _fixedTableView.tableFooterView = [UIView new];
-        [_fixedTableView registerNib:[UINib nibWithNibName:NSStringFromClass([FixedTableViewTableViewCell class]) bundle:nil] forCellReuseIdentifier:NSStringFromClass([FixedTableViewTableViewCell class])];
-        [self.superV addSubview:_fixedTableView];
+- (FFColectionView *)fixedCollectionView {
+    if (!_fixedCollectionView) {
+        UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc]init];
+        layout.sectionHeadersPinToVisibleBoundsAll = !self.showAllHeight;
+        _fixedCollectionView = [[FFColectionView alloc]initWithFrame:CGRectMake(0, 0, _fixedCollectionView.bounds.size.width, _fixedCollectionView.bounds.size.height) collectionViewLayout:layout];
+        _fixedCollectionView.showsVerticalScrollIndicator = false;
+        _fixedCollectionView.showsHorizontalScrollIndicator = false;
+        _fixedCollectionView.delegate = self;
+        _fixedCollectionView.dataSource = self;
+        _fixedCollectionView.backgroundColor = [UIColor whiteColor];
+        [_fixedCollectionView registerNib:[UINib nibWithNibName:NSStringFromClass([FFTableCollectionViewCell class]) bundle:nil] forCellWithReuseIdentifier:NSStringFromClass([FFTableCollectionViewCell class])];
+        [_fixedCollectionView registerClass:[FFCollectionHeaderView class] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:NSStringFromClass([FFCollectionHeaderView class])];
+        _fixedCollectionView.scrollEnabled = !self.showAllHeight;
+        [self.superV addSubview:_fixedCollectionView];
     }
-    return _fixedTableView;
+    return _fixedCollectionView;
 }
 
 - (UIView *)headerView {
@@ -791,10 +861,12 @@ static NSInteger const DefaultCellWidth = 80;
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
     if ([scrollView isEqual:_mainCollectionView] && self.isFixedFirstcolumn) {
-        [_fixedTableView setContentOffset:_fixedTableView.contentOffset animated:NO];
+        _fixedCollectionView.userInteractionEnabled = false;
+        [_fixedCollectionView setContentOffset:_fixedCollectionView.contentOffset animated:NO];
     }
     
-    if ([scrollView isEqual:_fixedTableView] && self.isFixedFirstcolumn) {
+    if ([scrollView isEqual:_fixedCollectionView] && self.isFixedFirstcolumn) {
+        _mainCollectionView.userInteractionEnabled = false;
         [_mainCollectionView setContentOffset:_mainCollectionView.contentOffset animated:NO];
     }
     
@@ -806,25 +878,30 @@ static NSInteger const DefaultCellWidth = 80;
         CGFloat value = 0;
         value = scrollView.contentOffset.y - _beforContentOffset;
         if ([scrollView isEqual:_mainCollectionView] && self.isFixedFirstcolumn) {
-            _fixedTableView.contentOffset = CGPointMake(0, _fixedTableView.contentOffset.y + value);
+            _fixedCollectionView.contentOffset = _mainCollectionView.contentOffset;
         }
         
-        if ([scrollView isEqual:_fixedTableView] && self.isFixedFirstcolumn) {
-            _mainCollectionView.contentOffset = CGPointMake(0, _mainCollectionView.contentOffset.y + value);
+        if ([scrollView isEqual:_fixedCollectionView] && self.isFixedFirstcolumn) {
+            _mainCollectionView.contentOffset = _fixedCollectionView.contentOffset;
         }
         
         _beforContentOffset = scrollView.contentOffset.y;
     }
+}
+
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
+    if ([scrollView isEqual:_mainCollectionView] && self.isFixedFirstcolumn) {
+        _fixedCollectionView.userInteractionEnabled = true;
+    }
     
-    if ([scrollView isEqual:_mainScrollView] && _mainScrollView.contentOffset.x < 0) {
-        _mainScrollView.contentOffset = CGPointZero;
+    if ([scrollView isEqual:_fixedCollectionView] && self.isFixedFirstcolumn) {
+        _mainCollectionView.userInteractionEnabled = true;
     }
 }
 
-- (UIScrollView *)mainScrollView {
+- (FFMainScrollView *)mainScrollView {
     if (!_mainScrollView) {
-        _mainScrollView = [[UIScrollView alloc]initWithFrame:CGRectZero];
-        _mainScrollView.delegate = self;
+        _mainScrollView = [[FFMainScrollView alloc]initWithFrame:CGRectZero];
         _mainScrollView.backgroundColor = [UIColor whiteColor];
         _mainScrollView.showsVerticalScrollIndicator = false;
         _mainScrollView.showsHorizontalScrollIndicator = false;
@@ -863,6 +940,7 @@ static NSInteger const DefaultCellWidth = 80;
 - (float)roundFloat:(float)price{
     return (floorf(price * 100 + 0.5)) / 100;
 }
+
 @end
 
 

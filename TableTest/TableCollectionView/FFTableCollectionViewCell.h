@@ -23,7 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FFTableCollectionViewCell : UICollectionViewCell
 @property (nonatomic, assign) FFMatrix currentMatrix;
 @property (nonatomic, assign) FFMatrix maxMatrix;
-@property (nonatomic, getter=ishaveHeader) BOOL haveHeader;
+@property (nonatomic, getter=isHeader) BOOL haveHeader;
+@property (nonatomic, getter=isLeft) BOOL left;
 - (void)showDataWithModel:(FFTableCollectionModel *)model borderColor:(UIColor *)borderColor edge:(UIEdgeInsets )edge size:(CGSize )size;
 + (UIFont *)getPhoneFont;
 @end

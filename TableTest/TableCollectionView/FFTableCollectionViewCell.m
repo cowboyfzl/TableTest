@@ -8,7 +8,7 @@
 
 #import "FFTableCollectionViewCell.h"
 
-@interface FFTableCollectionViewCell ()
+@interface FFTableCollectionViewCell () <UIGestureRecognizerDelegate>
 @property (weak, nonatomic) IBOutlet UILabel *contentLabel;
 @property (strong, nonatomic) IBOutletCollection(NSLayoutConstraint) NSArray *LabelOffsets;
 @property (nonatomic, strong) CAShapeLayer *borderLayer;
@@ -53,8 +53,7 @@ CGFloat const FFTableCollectionViewCellLineOffst = 0.2;
 
 - (void)setFrameWithSize:(CGSize )size {
     UIBezierPath *path = [UIBezierPath bezierPath];
-    
-    if (self.ishaveHeader) {
+    if (self.isHeader) {
         if (_currentMatrix.row == 0 && _currentMatrix.column == 0) {
             [path moveToPoint:CGPointMake(FFTableCollectionViewCellLineOffst, size.height - (FFTableCollectionViewCellLineOffst * 2))];
             [path addLineToPoint:CGPointMake(FFTableCollectionViewCellLineOffst, FFTableCollectionViewCellLineOffst)];
@@ -88,7 +87,9 @@ CGFloat const FFTableCollectionViewCellLineOffst = 0.2;
         [path moveToPoint:CGPointMake(FFTableCollectionViewCellLineOffst, size.height - (FFTableCollectionViewCellLineOffst * 2))];
         [path addLineToPoint:CGPointMake(FFTableCollectionViewCellLineOffst, FFTableCollectionViewCellLineOffst)];
         [path addLineToPoint:CGPointMake(size.width - (FFTableCollectionViewCellLineOffst * 2), FFTableCollectionViewCellLineOffst)];
-        [path addLineToPoint:CGPointMake(size.width - (FFTableCollectionViewCellLineOffst * 2), size.height - FFTableCollectionViewCellLineOffst)];
+        if (!self.isLeft) {
+            [path addLineToPoint:CGPointMake(size.width - (FFTableCollectionViewCellLineOffst * 2), size.height - FFTableCollectionViewCellLineOffst)];
+        }
     }
     
     if (_currentMatrix.column > 0) {
@@ -97,8 +98,13 @@ CGFloat const FFTableCollectionViewCellLineOffst = 0.2;
         [path addLineToPoint:CGPointMake(size.width - (FFTableCollectionViewCellLineOffst * 2), size.height - (FFTableCollectionViewCellLineOffst * 2))];
     }
     
-    if (_currentMatrix.row == _maxMatrix.row ) {
-        [path addLineToPoint:CGPointMake(FFTableCollectionViewCellLineOffst , size.height - (FFTableCollectionViewCellLineOffst * 2))];
+    if (_currentMatrix.row == _maxMatrix.row) {
+        if (self.isLeft) {
+            [path moveToPoint:CGPointMake(FFTableCollectionViewCellLineOffst, size.height - (FFTableCollectionViewCellLineOffst * 2))];
+            [path addLineToPoint:CGPointMake(size.width - (FFTableCollectionViewCellLineOffst * 2), size.height - (FFTableCollectionViewCellLineOffst * 2))];
+        } else {
+            [path addLineToPoint:CGPointMake(FFTableCollectionViewCellLineOffst , size.height - (FFTableCollectionViewCellLineOffst * 2))];
+        }
     }
 }
 

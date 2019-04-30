@@ -9,6 +9,8 @@
 #import <UIKit/UIKit.h>
 #import "FFTableCollectionModel.h"
 #import "FFTableCollectionViewFlowLayout.h"
+#import "FFMainScrollView.h"
+
 NS_ASSUME_NONNULL_BEGIN
 @class FFTableManager;
 
@@ -202,7 +204,7 @@ typedef void(^FFSelectBlock)(UICollectionView * _Nullable collectionView, FFMatr
 /// 表格对象
 @property (nonatomic, strong) UICollectionView *mainCollectionView;
 /// 左右滚动对象
-@property (nonatomic, strong) UIScrollView *mainScrollView;
+@property (nonatomic, strong) FFMainScrollView *mainScrollView;
 
 /**
  是否显示全部
