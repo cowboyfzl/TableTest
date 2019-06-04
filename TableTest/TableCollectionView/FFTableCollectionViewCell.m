@@ -28,6 +28,7 @@ CGFloat const FFTableCollectionViewCellLineOffst = 0.2;
     _contentLabel.textColor = model.textColor ?: [UIColor blackColor];
     _contentLabel.font = model.font?: [FFTableCollectionViewCell getPhoneFont];
     _contentLabel.text = model.content;
+    _contentLabel.numberOfLines = self.isFixedHeight ? 1 : 0;
     self.contentView.backgroundColor = model.bgColor?: [UIColor whiteColor];
     _borderLayer.strokeColor = borderColor.CGColor ?: [UIColor lightGrayColor].CGColor;
     NSInteger i = 0;

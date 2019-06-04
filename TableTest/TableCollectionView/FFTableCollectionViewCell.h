@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) FFMatrix maxMatrix;
 @property (nonatomic, getter=isHeader) BOOL haveHeader;
 @property (nonatomic, getter=isLeft) BOOL left;
+@property (nonatomic, getter=isFixedHeight) BOOL fixedHeight;
 - (void)showDataWithModel:(FFTableCollectionModel *)model borderColor:(UIColor *)borderColor edge:(UIEdgeInsets )edge size:(CGSize )size;
 + (UIFont *)getPhoneFont;
 @end

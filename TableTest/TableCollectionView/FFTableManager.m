@@ -38,6 +38,7 @@
 @property (nonatomic, assign) CGFloat fixedTableViewWidth;
 @property (nonatomic, assign) BOOL isRotate;
 @property (nonatomic, assign) CGFloat beforContentOffset;
+@property (nonatomic, assign) CGFloat cellHeight;
 @end
 static NSInteger const DefaultCellWidth = 80;
 @implementation FFTableManager
@@ -157,6 +158,13 @@ static NSInteger const DefaultCellWidth = 80;
 - (FFTableManager *(^)(CollectionViewCellPosition position))collectionViewCellPosition {
     return ^FFTableManager *(CollectionViewCellPosition position) {
         self.position = position;
+        return self;
+    };
+}
+
+- (FFTableManager * _Nonnull (^)(CGFloat))fixedCellHeight {
+    return ^FFTableManager *(CGFloat height) {
+        self.cellHeight = height;
         return self;
     };
 }
@@ -371,30 +379,35 @@ static NSInteger const DefaultCellWidth = 80;
         return maxHeight;
     }
     
-    if (self.isFixedFirstcolumn && _section == 1) {
-        CGFloat textWidth = self.fixedTableViewWidth + _cellTextMargin.left + _cellTextMargin.right;
-        FFMatrix currentMatrix = MatrixMake(row - 1, 0);
-        FFTableCollectionModel *model = [self.dataSource ffTableManagerSetData:self section:section matrix:currentMatrix];
-        CGFloat textHeight = [self tableManagerWithLabelTextRectWithSize:CGSizeMake(textWidth, MAXFLOAT) withFontSize:model.font withText:model.content].size.height + 1;
-        maxHeight = textHeight;
-    }
-    
-    for (NSInteger j = 0; j < column; j++) {
-        FFMatrix currentMatrix = MatrixMake(row - 1, j);
-        __weak FFTableCollectionModel *model;
+    if (self.cellHeight > 0) {
+        maxHeight = self.cellHeight;
+    } else {
         if (self.isFixedFirstcolumn && _section == 1) {
-            FFMatrix matrix = MatrixMake(row - 1, j + 1);
-            model = [self.dataSource ffTableManagerSetData:self section:section matrix:matrix];
-        } else {
-            model = [self.dataSource ffTableManagerSetData:self section:section matrix:currentMatrix];
+            CGFloat textWidth = self.fixedTableViewWidth + _cellTextMargin.left + _cellTextMargin.right;
+            FFMatrix currentMatrix = MatrixMake(row - 1, 0);
+            FFTableCollectionModel *model = [self.dataSource ffTableManagerSetData:self section:section matrix:currentMatrix];
+            CGFloat textHeight = [self tableManagerWithLabelTextRectWithSize:CGSizeMake(textWidth, MAXFLOAT) withFontSize:model.font withText:model.content].size.height + 1;
+            maxHeight = textHeight;
         }
         
-        CGFloat textWidth = [self calculateTextLabelWidthWithColumn:j Section:section];
-        CGFloat textHeight = [self tableManagerWithLabelTextRectWithSize:CGSizeMake(textWidth, MAXFLOAT) withFontSize:model.font withText:model.content].size.height + 1;
-        maxHeight = textHeight > maxHeight ? textHeight : maxHeight;
+        for (NSInteger j = 0; j < column; j++) {
+            FFMatrix currentMatrix = MatrixMake(row - 1, j);
+            __weak FFTableCollectionModel *model;
+            if (self.isFixedFirstcolumn && _section == 1) {
+                FFMatrix matrix = MatrixMake(row - 1, j + 1);
+                model = [self.dataSource ffTableManagerSetData:self section:section matrix:matrix];
+            } else {
+                model = [self.dataSource ffTableManagerSetData:self section:section matrix:currentMatrix];
+            }
+            
+            CGFloat textWidth = [self calculateTextLabelWidthWithColumn:j Section:section];
+            CGFloat textHeight = [self tableManagerWithLabelTextRectWithSize:CGSizeMake(textWidth, MAXFLOAT) withFontSize:model.font withText:model.content].size.height + 1;
+            maxHeight = textHeight > maxHeight ? textHeight : maxHeight;
+        }
+        
+        maxHeight += _cellTextMargin.top + _cellTextMargin.bottom;
     }
     
-    maxHeight += _cellTextMargin.top + _cellTextMargin.bottom;
     [self.cacheRowHeight setValue:@(maxHeight) forKey:key];
     return maxHeight;
 }
@@ -593,9 +606,14 @@ static NSInteger const DefaultCellWidth = 80;
 - (nonnull __kindof UICollectionViewCell *)collectionView:(nonnull UICollectionView *)collectionView cellForItemAtIndexPath:(nonnull NSIndexPath *)indexPath {
     if ([collectionView isEqual:_mainCollectionView]) {
         FFTableCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:NSStringFromClass([FFTableCollectionViewCell class]) forIndexPath:indexPath];
+        cell.fixedHeight = _cellHeight > 0;
         NSInteger sourceColumn = [self.dataSource ffTableManager:self columnSection:indexPath.section];
         if (self.isFixedFirstcolumn && _section == 1) {
             sourceColumn -= 1;
+        }
+        
+        if (sourceColumn == 0) {
+            sourceColumn = 1;
         }
         
         NSInteger row = ceil(indexPath.row / sourceColumn);
@@ -623,6 +641,7 @@ static NSInteger const DefaultCellWidth = 80;
         return cell;
     } else {
         FFTableCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:NSStringFromClass([FFTableCollectionViewCell class]) forIndexPath:indexPath];
+        cell.fixedHeight = _cellHeight > 0;
         cell.left = _isFixedFirstcolumn;
         FFMatrix fiexMatrix = MatrixMake(indexPath.row, 0);
         cell.currentMatrix = fiexMatrix;
@@ -646,6 +665,10 @@ static NSInteger const DefaultCellWidth = 80;
         
         NSInteger row = ceil(indexPath.row / sourceColumn);
         NSInteger column = indexPath.row % sourceColumn;
+        if (self.isFixedFirstcolumn && _section == 1) {
+            column += 1;
+        }
+        
         FFMatrix matrix = MatrixMake(row, column);
         if ([self.delegate respondsToSelector:@selector(ffTableManager:didSelectWithCollectionView:section:matrix:)]) {
             [self.delegate ffTableManager:self didSelectWithCollectionView:collectionView section:indexPath.section matrix:matrix];

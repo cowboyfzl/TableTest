@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 struct FFMatrix {
     NSInteger row;
-    NSInteger column ;
+    NSInteger column;
 };
 typedef struct CG_BOXABLE FFMatrix FFMatrix;
 
@@ -254,11 +254,15 @@ typedef void(^FFSelectBlock)(UICollectionView * _Nullable collectionView, FFMatr
  */
 - (FFTableManager *(^)(CollectionViewCellPosition position))collectionViewCellPosition;
 
-
 /**
  固定左边一排数据
  */
 - (FFTableManager *(^)(BOOL fixedFirstcolumn))setFixedFirstcolumn;
+
+/**
+ 固定cell高度，label将会text...
+ */
+- (FFTableManager *(^)(CGFloat height))fixedCellHeight;
 
 /**
  点击cell回调
